@@ -1,0 +1,12 @@
+.pitch-container {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.pitch-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}

@@ -1,0 +1,277 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   ZONE ENTRIES VIEW
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.zone-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  font-family: var(--font-family);
+}
+
+.zv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-light);
+}
+
+/* ── Toggle UI ── */
+.zv-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.zv-btn-group {
+  display: flex;
+  background: var(--bg-badge);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  width: fit-content;
+}
+
+.zv-btn {
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.zv-btn:hover { color: var(--text-primary); }
+
+.zv-btn.active {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.zv-btn.active.home { border-bottom: 2px solid var(--color-home); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.zv-btn.active.away { border-bottom: 2px solid var(--color-away); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+
+/* ── Summary Stats ── */
+.zv-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.zv-stat {
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+}
+.zv-stat.home { color: var(--color-home); }
+.zv-stat.away { color: var(--color-away); }
+
+.zv-stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+
+/* ── Pitch Components ── */
+.zv-pitch-container {
+  position: relative;
+  background: #111827; 
+  border-radius: var(--radius-lg);
+  padding: 2%; 
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.zv-pitch-svg {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  display: block;
+  aspect-ratio: 105 / 68;
+  overflow: visible;
+  --zv-line-color: rgba(255, 255, 255, 0.25);
+}
+
+.zv-turf { fill: #111827; }
+.zv-lines { stroke: var(--zv-line-color); }
+
+/* ── Target Area Shading ── */
+.zv-target-zone {
+  transition: all 0.5s ease;
+}
+
+.zv-target-zone.active {
+  fill: rgba(255, 255, 255, 0.06); /* subtle illumination */
+  stroke: rgba(255,255,255, 0.3);
+  stroke-width: 0.5;
+  stroke-dasharray: 2, 2; /* Dashed boundary for the glowing zone */
+}
+
+/* ── Entry Vectors ── */
+.zv-vector {
+  transition: stroke-width 0.2s ease, filter 0.2s ease;
+  cursor: pointer;
+}
+
+.zv-vector.home { stroke: var(--color-home); }
+.zv-vector.away { stroke: var(--color-away); }
+
+.zv-vector:hover {
+  stroke-width: 0.8 !important; /* Emphasize heavily on hover */
+  filter: drop-shadow(0 0 3px rgba(255,255,255,0.8));
+}
+
+.zv-arrowhead.home { fill: var(--color-home); }
+.zv-arrowhead.away { fill: var(--color-away); }
+
+/* ── Tooltip ── */
+.zv-tooltip {
+  position: absolute;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  pointer-events: none;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.zv-tt-player {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+}
+
+.zv-tt-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.zv-tt-row span.val { color: var(--text-primary); font-weight: 700; }
+.zv-tt-dim { color: var(--text-muted); font-size: 10px; margin-top: 2px; }
+
+/* ── Top Players Panel & Legend ── */
+.zv-summary-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.zv-top-players {
+  background: var(--bg-card); /* clean white/light pane */
+  border: 1px solid var(--border-light);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  min-width: 200px;
+  max-width: 250px;
+  flex-shrink: 0;
+  height: fit-content;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.zv-top-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  font-weight: 800;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 6px;
+}
+
+.zv-player-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.zv-player-list li {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.zv-player-list .rank {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  width: 18px;
+  flex-shrink: 0;
+}
+
+.zv-player-list .name {
+  flex: 1;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 8px;
+}
+
+.zv-player-list .count {
+  font-weight: 800;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.zv-player-list .count.home { color: var(--color-home); }
+.zv-player-list .count.away { color: var(--color-away); }
+
+.zv-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.zv-legend {
+  border-top: 1px solid var(--border-light);
+  padding-top: 16px;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.zv-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.zv-legend-line {
+  min-width: 24px;
+  max-width: 24px;
+  height: 2px;
+  min-height: 2px;
+  max-height: 2px;
+  display: block;
+}
+
+.zv-legend-line.solid.home { background-color: var(--color-home); }
+.zv-legend-line.solid.away { background-color: var(--color-away); }
+.zv-legend-line.dashed { background-color: transparent; }
+.zv-legend-line.dashed.home { border-top: 2px dashed var(--color-home); }
+.zv-legend-line.dashed.away { border-top: 2px dashed var(--color-away); }

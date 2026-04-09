@@ -1,0 +1,208 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   PREMIUM PASS NETWORK STYLES (Horizontal)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.premium-pn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  font-family: var(--font-family);
+}
+
+/* ── Header ── */
+.ppn-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.ppn-team-selector {
+  display: flex;
+  background: var(--bg-badge);
+  border-radius: var(--radius-md);
+  padding: 4px;
+}
+
+.ppn-tab {
+  padding: 8px 24px;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.ppn-tab:hover { color: var(--text-primary); }
+
+.ppn-tab.active {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.ppn-tab.active.home { border-bottom: 2px solid var(--color-home); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.ppn-tab.active.away { border-bottom: 2px solid var(--color-away); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+
+.ppn-summary {
+  display: flex;
+  gap: var(--space-lg);
+}
+
+.ppn-sum-item {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+}
+
+.ppn-sum-item span {
+  font-size: var(--font-size-lg);
+  font-weight: 900;
+  color: var(--text-primary);
+  margin-right: 6px;
+}
+
+/* ── Pitch Visualization ── */
+.ppn-pitch-container {
+  position: relative;
+  background: #111827; /* Dark elegant turf */
+  border-radius: var(--radius-lg);
+  padding: 2%; 
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ppn-pitch-svg {
+  width: 100%;
+  max-width: 800px;
+  height: auto;
+  aspect-ratio: 105 / 68; /* Standard horizontal pitch ratio */
+  overflow: visible;
+  --ppn-line-color: rgba(255, 255, 255, 0.25);
+}
+
+.ppn-turf {
+  fill: #111827;
+}
+
+.ppn-lines {
+  stroke: var(--ppn-line-color);
+}
+
+/* ── Graph Elements ── */
+.ppn-edge {
+  stroke: rgba(255, 255, 255, 0.6);
+  stroke-linecap: round;
+  transition: opacity 0.2s ease, stroke 0.2s ease;
+}
+
+.ppn-edge.dimmed {
+  opacity: 0.1 !important;
+}
+
+.ppn-edge.active {
+  stroke: #00F485 !important;
+  opacity: 1 !important;
+}
+
+.ppn-node-group {
+  transition: opacity 0.2s ease;
+}
+.ppn-node-group.dimmed {
+  opacity: 0.15 !important;
+}
+
+.ppn-node {
+  fill: #1e293b;
+  stroke: #94a3b8;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.ppn-node-group.hovered .ppn-node,
+.ppn-node:hover {
+  fill: #00F485;
+  stroke: #fff;
+  stroke-width: 0.5;
+}
+
+.ppn-node-label {
+  font-family: var(--font-family);
+  font-size: 2px;
+  font-weight: 800;
+  fill: #fff;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none; /* so mouse interactions only hit the circle */
+}
+
+/* ── Sidebar Legend ── */
+.ppn-body {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .ppn-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ppn-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.ppn-sidebar-title {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 6px;
+}
+
+.ppn-tt-player {
+  font-size: var(--font-size-base);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.ppn-insight {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ppn-insight-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.ppn-insight-row strong {
+  color: var(--text-primary);
+}
+
+.ppn-insight-empty {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 10px 0;
+}

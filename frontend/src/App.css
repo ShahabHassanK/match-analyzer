@@ -1,0 +1,21 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   App Shell Styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+}
+
+.footer {
+  text-align: center;
+  padding: var(--space-lg);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-light);
+}

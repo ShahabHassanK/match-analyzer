@@ -1,0 +1,129 @@
+.starting-xi {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.xi-heading {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+}
+
+.xi-columns {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.xi-column {
+  flex: 1 1 50% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.xi-team-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: 0 0 var(--space-sm) 0 !important;
+  padding: 0 0 6px 0 !important;
+  border-bottom: 2px solid var(--border-light);
+  min-width: 0;
+}
+.xi-team-header.home { border-color: var(--color-home); }
+.xi-team-header.away { border-color: var(--color-away); }
+
+.xi-team-dot {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.home-dot { background: var(--color-home); }
+.away-dot { background: var(--color-away); }
+
+.xi-team-name {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.xi-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0;
+  margin: 0;
+}
+
+.xi-player {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: 6px var(--space-xs);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  transition: background var(--transition-fast), color var(--transition-fast);
+  text-align: left;
+  position: relative;
+  min-width: 0;
+}
+
+.xi-player:hover {
+  background: var(--bg-badge);
+}
+
+.xi-player.active {
+  background: var(--color-primary);
+  color: var(--text-on-dark);
+  font-weight: 600;
+}
+
+.xi-number {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  width: 16px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.xi-player.active .xi-number {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.xi-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.xi-active-dot {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  flex-shrink: 0;
+}

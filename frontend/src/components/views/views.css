@@ -1,0 +1,211 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Shared styles for all tactical views
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.view-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.view-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  font-size: var(--font-size-base);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ── Legend ── */
+.view-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.legend-dot {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Toggle Buttons ── */
+.view-toggle {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-badge);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  width: fit-content;
+}
+
+.toggle-btn {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: calc(var(--radius-md) - 2px);
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.toggle-btn:hover {
+  color: var(--text-primary);
+}
+
+.toggle-btn.active {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Controls ── */
+.view-controls {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.view-select {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  padding: 6px 12px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.view-select:hover, .view-select:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+/* ── Player View Header ── */
+.player-view-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.player-view-name {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.player-view-stat {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ── Stat Chips ── */
+.stat-chips {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: var(--bg-badge);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: var(--font-size-sm);
+}
+
+.chip-label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.chip-value {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* ── Shot List ── */
+.shot-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.shot-list-header {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-bottom: var(--space-xs);
+  border-bottom: 2px solid var(--border-light);
+  margin-bottom: var(--space-xs);
+}
+
+.shot-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 3px 0;
+  font-size: var(--font-size-sm);
+}
+
+.shot-dot {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.shot-time {
+  font-weight: 600;
+  color: var(--text-muted);
+  width: 30px;
+  flex-shrink: 0;
+}
+
+.shot-player {
+  color: var(--text-primary);
+}
+
+/* ── Momentum Chart ── */
+.momentum-chart-wrapper {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  overflow: hidden;
+}
+
+.momentum-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ── Pass Sonar ── */
+.sonar-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.sonar-svg {
+  width: 100%;
+  max-width: 340px;
+  height: auto;
+}

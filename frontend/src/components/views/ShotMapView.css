@@ -1,0 +1,384 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   PREMIUM SHOT MAP STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.premium-shotmap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  font-family: var(--font-family);
+}
+
+/* ── Header ── */
+.psm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.psm-team-selector {
+  display: flex;
+  background: var(--bg-badge);
+  border-radius: var(--radius-md);
+  padding: 4px;
+}
+
+.psm-tab {
+  padding: 8px 24px;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.psm-tab:hover {
+  color: var(--text-primary);
+}
+
+.psm-tab.active {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.psm-tab.active.home { border-bottom: 2px solid var(--color-home); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.psm-tab.active.away { border-bottom: 2px solid var(--color-away); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+
+.psm-summary {
+  display: flex;
+  gap: var(--space-lg);
+}
+
+.psm-sum-item {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.psm-sum-item span {
+  font-size: var(--font-size-xl);
+  font-weight: 900;
+  color: var(--text-primary);
+  margin-right: 6px;
+}
+
+/* ── Body Layout ── */
+.psm-body {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: var(--space-xl);
+  align-items: stretch;
+}
+
+@media (max-width: 900px) {
+  .psm-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Pitch Visualization ── */
+.psm-pitch-container {
+  position: relative;
+  background: #111827; /* Dark elegant background */
+  border-radius: var(--radius-lg);
+  padding: 2%; /* small inner padding so dots dont clip */
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.psm-pitch-svg {
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  overflow: visible; /* so outer glow works */
+  --psm-line-color: rgba(255, 255, 255, 0.25);
+}
+
+.psm-turf {
+  fill: #111827;
+}
+
+.psm-lines {
+  stroke: var(--psm-line-color);
+}
+
+.psm-shot-node {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.psm-shot-node:hover circle {
+  stroke-width: 0.6;
+  stroke: #ffffff;
+}
+
+/* Pulse animation for goal glows */
+@keyframes psmPulse {
+  0% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.2); opacity: 0.2; }
+  100% { transform: scale(1); opacity: 0.4; }
+}
+.pulse {
+  transform-origin: center;
+  animation: psmPulse 2s infinite ease-in-out;
+}
+
+/* ── Absolute HTML Tooltip ── */
+.psm-tooltip {
+  position: absolute;
+  /* Transform shifts it to be perfectly centered above the dot */
+  transform: translate(-50%, calc(-100% - 12px));
+  z-index: 100;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+}
+
+/* Little tail for the tooltip */
+.psm-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px 6px 0;
+  border-style: solid;
+  border-color: #1e293b transparent transparent transparent;
+}
+
+/* Boundary Shift Classes */
+.psm-tooltip.flip-down {
+  transform: translate(-50%, 12px);
+}
+.psm-tooltip.flip-down::after {
+  top: -6px;
+  bottom: auto;
+  border-width: 0 6px 6px;
+  border-color: transparent transparent #1e293b transparent;
+}
+
+.psm-tooltip.shift-right {
+  transform: translate(-15%, calc(-100% - 12px));
+}
+.psm-tooltip.shift-right.flip-down {
+  transform: translate(-15%, 12px);
+}
+.psm-tooltip.shift-right::after {
+  left: 15%;
+}
+
+.psm-tooltip.shift-left {
+  transform: translate(-85%, calc(-100% - 12px));
+}
+.psm-tooltip.shift-left.flip-down {
+  transform: translate(-85%, 12px);
+}
+.psm-tooltip.shift-left::after {
+  left: 85%;
+}
+
+.psm-tooltip-inner {
+  background: #1e293b;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-radius: var(--radius-md);
+  padding: 12px;
+  min-width: 160px;
+}
+
+.psm-tt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.psm-tt-player {
+  font-weight: 700;
+  font-size: var(--font-size-base);
+}
+
+.psm-tt-minute {
+  font-weight: 900;
+  color: #94a3b8;
+  font-size: var(--font-size-sm);
+}
+
+.psm-tt-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.psm-tt-badge {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.psm-tt-dist {
+  font-size: var(--font-size-sm);
+  color: #cbd5e1;
+  font-family: monospace;
+}
+
+.psm-tt-footer {
+  display: flex;
+  gap: 6px;
+}
+
+.psm-pill {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 12px;
+  background: #334155;
+}
+.psm-pill.warning { background: #f59e0b; color: #fff; }
+.psm-pill.info { background: #3b82f6; color: #fff; }
+
+/* ── Sidebar ── */
+.psm-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.psm-sidebar-title {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 6px;
+}
+
+.psm-legend-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.psm-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.psm-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.psm-dot.goal { background: #00F485; box-shadow: 0 0 8px rgba(0,244,133,0.5); }
+.psm-dot.target { background: #38BDF8; }
+.psm-dot.miss { background: #94A3B8; }
+
+.psm-dot-size {
+  border-radius: 50%;
+  background: #cbd5e1;
+}
+.psm-dot-size.big { width: 14px; height: 14px; }
+.psm-dot-size.normal { width: 8px; height: 8px; margin: 0 3px; }
+
+
+/* ── Timeline list ── */
+.psm-timeline-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; 
+}
+
+.psm-timeline-list {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+}
+
+.psm-tl-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-light);
+  transition: background 0.15s ease;
+  cursor: default;
+}
+.psm-tl-item:last-child { border-bottom: none; }
+
+.psm-tl-item:hover, .psm-tl-item.active {
+  background: var(--bg-badge);
+}
+
+.psm-tl-min {
+  font-weight: 800;
+  color: var(--text-muted);
+  width: 25px;
+  font-size: var(--font-size-sm);
+}
+
+.psm-tl-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.psm-tl-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 8px;
+}
+
+.psm-tl-name {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+
+.psm-tl-bc {
+  font-size: 9px;
+  font-weight: 800;
+  background: #f59e0b;
+  color: #fff;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.psm-tl-empty {
+  padding: var(--space-xl) var(--space-md);
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: var(--font-size-sm);
+}
