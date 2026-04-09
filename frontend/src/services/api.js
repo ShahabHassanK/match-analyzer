@@ -5,7 +5,10 @@
  * Every function returns parsed JSON. Errors are thrown as Error objects.
  */
 
-const BASE_URL = 'http://127.0.0.1:8000/api';
+// Base URL: set VITE_API_URL in .env.local for local dev, or in Vercel env vars for production.
+// Falls back to localhost:8000 if the variable is not set.
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
 
 async function request(path, options = {}) {
   const res = await fetch(`${BASE_URL}${path}`, options);
