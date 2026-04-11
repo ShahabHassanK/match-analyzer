@@ -261,7 +261,7 @@ Every shot attempt plotted on a half-pitch, sized by xG proxy (distance from goa
 - **Blue** — Shot on target (saved)
 - **Gray** — Off-target / blocked
 
-Clicking a shot displays a floating tooltip with player name, minute, xG value, distance, and shot type.
+Clicking a shot displays a floating tooltip with player name, minute, xG proxy distance, body part (Header/Left Foot/Right Foot), and shot origin context (e.g., Open Play, Penalty, From Corner).
 
 ![Shot Map](viz/shotmap.PNG)
 
@@ -277,20 +277,22 @@ A directed graph overlaid on the pitch showing average player positions as nodes
 
 ### Defensive Actions
 
-Tackles, interceptions, and clearances plotted on a full pitch, grouped by pitch zone. Helps identify where each team wins the ball back most frequently and whether the defensive shape is compact or dispersed.
+Tackles, interceptions, and clearances plotted on a full pitch, grouped by pitch zone. Helps identify where each team wins the ball back most frequently. The median **Defensive Line** is calculated exclusively from open-play defensive actions, filtering out set-piece congestion to accurately reflect open-play pressing height.
 
 ![Defensive Actions](viz/defensiveactions.png)
 
 ---
 
-### Zone Entries & Final Third
+### Zone Entries, Final Third & Through Balls
 
-Tracks how each team penetrates into dangerous areas:
-- **Box Entries** — carries or passes that end inside the penalty area
-- **Final Third Entries** — actions that move the ball from mid to the attacking third
+Tracks how each team penetrates into dangerous areas exclusively from open-play:
+- **Box Entries** — open-play carries or passes that end inside the penalty area
+- **Final Third Entries** — open-play actions that move the ball into the attacking third
+- **Through Balls** — progressive, line-breaking passes highlighting successful (solid) vs unsuccessful (dashed red) passes.
 
-Visualized as zone-split bar charts with entry method breakdowns (pass vs carry).
+Visualized as zone-split bar charts with entry method breakdowns (pass vs carry) and top penetrator scoreboards.
 
+![Through Balls](viz/throughball.png)
 ![Zone Entries](viz/finalthird.png)
 
 ---
@@ -300,6 +302,15 @@ Visualized as zone-split bar charts with entry method breakdowns (pass vs carry)
 Highlights entries into **Zone 14** (the central pocket just outside the penalty box, between the two penalty arcs), one of the most analytically significant zones in modern football.
 
 ![Zone 14](viz/zone14.png)
+
+---
+
+### Set Pieces
+
+Comprehensive mapping of Corner and Free Kick deliveries, tracking player execution, first-contact win rates, and subsequent shot outcomes. Evaluates set-piece danger against open-play production through a robust analytics summary block.
+
+![Corners](viz/corners.png)
+![Free Kicks](viz/freekicks.png)
 
 ---
 
@@ -423,7 +434,8 @@ All endpoints are prefixed with `/api`.
 | `GET` | `/match/{id}/shots` | Shot map data |
 | `GET` | `/match/{id}/pass-network` | Pass network graph |
 | `GET` | `/match/{id}/defensive-actions` | Defensive action heatmap |
-| `GET` | `/match/{id}/zone-entries` | Zone entry statistics |
+| `GET` | `/match/{id}/zone-entries` | Zone entry and through ball statistics |
+| `GET` | `/match/{id}/set-pieces` | Set piece analysis (Corners & Free Kicks) |
 | `GET` | `/match/{id}/territory` | Touch density heatmap |
 | `GET` | `/match/{id}/momentum` | Match momentum timeline |
 | `GET` | `/match/{id}/ppda` | PPDA by half |

@@ -15,17 +15,23 @@ export default function ZoneEntriesView({ data, homeTeam, awayTeam }) {
 
   const vectors = teamData[`${activeZone}Entries`] || [];
   const entryCount = teamData[`${activeZone}Count`] || 0;
+  
+  // Custom logic for through balls (both successful and unsuccessful)
+  const isThroughBallTab = activeZone === 'throughBall';
+  const successfulVectors = isThroughBallTab ? vectors.filter(v => v.outcome === 'Successful') : vectors;
+  const successCount = isThroughBallTab ? successfulVectors.length : entryCount;
 
   // ── Calculate Top 3 Players ──────────────────────────────────────────────
+  // ── Calculate Top 3 Players (for through balls, rank by successful, or display total) ─────────────────────────
   const topPlayers = useMemo(() => {
     const counts = {};
-    vectors.forEach(v => {
+    successfulVectors.forEach(v => {
       counts[v.player] = (counts[v.player] || 0) + 1;
     });
     return Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3);
-  }, [vectors]);
+  }, [successfulVectors]);
 
   // Geometry Translation
   const scaleX = (val) => (val / 100) * 105;
@@ -70,13 +76,21 @@ export default function ZoneEntriesView({ data, homeTeam, awayTeam }) {
             >
               Zone 14
             </button>
+            <button
+              className={`zv-btn ${activeZone === 'throughBall' ? 'active' : ''}`}
+              onClick={() => setActiveZone('throughBall')}
+            >
+              Through Balls
+            </button>
           </div>
         </div>
 
         <div className="zv-summary-container">
             <div className="zv-summary">
-            <div className={`zv-stat ${teamClass}`}>{entryCount}</div>
-            <div className="zv-stat-label">Successful Entries</div>
+            <div className={`zv-stat ${teamClass}`}>{successCount}</div>
+            <div className="zv-stat-label">
+              {isThroughBallTab ? `Successful Attempts (${entryCount > 0 ? Math.round((successCount/entryCount)*100) : 0}%)` : 'Successful Entries'}
+            </div>
             </div>
         </div>
       </div>
@@ -85,7 +99,9 @@ export default function ZoneEntriesView({ data, homeTeam, awayTeam }) {
         
         {/* Top Players Panel Overlaid on the pitch container (left side) */}
         <div className="zv-top-players">
-           <h4 className="zv-top-title">Top Penetrators ({activeZone === 'zone14' ? 'Z14' : 'Final 1/3'})</h4>
+           <h4 className="zv-top-title">
+             Top Penetrators ({isThroughBallTab ? 'Through' : (activeZone === 'zone14' ? 'Z14' : 'Final 1/3')})
+           </h4>
            {topPlayers.length > 0 ? (
              <ul className="zv-player-list">
                {topPlayers.map(([player, count], idx) => (
@@ -102,14 +118,29 @@ export default function ZoneEntriesView({ data, homeTeam, awayTeam }) {
            
            {/* Legend */}
            <div className="zv-legend">
-              <div className="zv-legend-item">
-                  <div className={`zv-legend-line solid ${teamClass}`}></div>
-                  <span>Pass</span>
-              </div>
-              <div className="zv-legend-item">
-                  <div className={`zv-legend-line dashed ${teamClass}`}></div>
-                  <span>Carry (Dribble)</span>
-              </div>
+              {isThroughBallTab ? (
+                <>
+                  <div className="zv-legend-item">
+                      <div className={`zv-legend-line solid ${teamClass}`}></div>
+                      <span>Successful Pass</span>
+                  </div>
+                  <div className="zv-legend-item">
+                      <div className={`zv-legend-line dashed`} style={{ borderTopColor: '#ef4444' }}></div>
+                      <span>Unsuccessful</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="zv-legend-item">
+                      <div className={`zv-legend-line solid ${teamClass}`}></div>
+                      <span>Pass</span>
+                  </div>
+                  <div className="zv-legend-item">
+                      <div className={`zv-legend-line dashed ${teamClass}`}></div>
+                      <span>Carry (Dribble)</span>
+                  </div>
+                </>
+              )}
            </div>
         </div>
 
@@ -131,7 +162,15 @@ export default function ZoneEntriesView({ data, homeTeam, awayTeam }) {
               <span>Minute</span>
               <span className="val">{hoveredVector.minute}'</span>
             </div>
-            {hoveredVector.type === 'Carry' && (
+            {isThroughBallTab && (
+              <div className="zv-tt-row">
+                <span>Outcome</span>
+                <span className="val" style={{ color: hoveredVector.outcome === 'Successful' ? 'inherit' : '#ef4444' }}>
+                  {hoveredVector.outcome}
+                </span>
+              </div>
+            )}
+            {!isThroughBallTab && hoveredVector.type === 'Carry' && (
               <div className="zv-tt-dim">(Dribbling progression)</div>
             )}
             {hoveredVector.type === 'Pass' && (
@@ -166,6 +205,18 @@ export default function ZoneEntriesView({ data, homeTeam, awayTeam }) {
               >
                 {/* Carries get a slightly distinct arrowhead */}
                 <path d="M 0 1 L 10 5 L 0 9 z" className={`zv-arrowhead carry ${teamClass}`} />
+              </marker>
+
+              <marker
+                id="arrow-unsuccessful-pass"
+                viewBox="0 0 10 10"
+                refX="7"
+                refY="5"
+                markerWidth="3.5"
+                markerHeight="3.5"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444" opacity="0.6" />
               </marker>
             </defs>
 
@@ -204,11 +255,19 @@ export default function ZoneEntriesView({ data, homeTeam, awayTeam }) {
                 const ey = scaleY(vec.endY);
                 
                 const isCarry = vec.type === 'Carry';
-                // Distinct stroke pattern: long dash for carry vs solid pass
-                const strokeDash = isCarry ? '1.5, 1.2' : 'none';
-                const opacity = isCarry ? 0.95 : 0.75;
+                const isUnsuccessful = vec.outcome !== 'Successful';
+                
+                // Distinct stroke pattern: long dash for carry or unsuccessful
+                const strokeDash = isCarry ? '1.5, 1.2' : (isUnsuccessful ? '2, 1.5' : 'none');
+                const opacity = isUnsuccessful ? 0.6 : (isCarry ? 0.95 : 0.75);
                 const strokeW = isCarry ? "0.6" : "0.45";
-                const marker = isCarry ? `url(#arrow-${teamClass}-carry)` : `url(#arrow-${teamClass}-pass)`;
+                
+                let marker = `url(#arrow-${teamClass}-pass)`;
+                if (isUnsuccessful) marker = "url(#arrow-unsuccessful-pass)";
+                else if (isCarry) marker = `url(#arrow-${teamClass}-carry)`;
+                
+                // Custom stroke for unsuccessful
+                const strokeColor = isUnsuccessful ? '#ef4444' : undefined;
 
                 return (
                   <line
@@ -217,7 +276,8 @@ export default function ZoneEntriesView({ data, homeTeam, awayTeam }) {
                     y1={sy}
                     x2={ex}
                     y2={ey}
-                    className={`zv-vector ${teamClass}`}
+                    className={`zv-vector ${isUnsuccessful ? '' : teamClass}`}
+                    stroke={strokeColor}
                     strokeWidth={strokeW}
                     strokeDasharray={strokeDash}
                     strokeOpacity={opacity}

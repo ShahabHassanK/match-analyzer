@@ -108,3 +108,7 @@ export function fetchPlayerPassSonar(matchId, playerName) {
 export function fetchAdvancedMetrics(matchId) {
   return request(`/match/${matchId}/advanced-metrics`);
 }
+
+export function fetchSetPieces(matchId) {
+  return request(`/match/${matchId}/set-pieces`);
+}

@@ -249,6 +249,7 @@
 }
 .psm-pill.warning { background: #f59e0b; color: #fff; }
 .psm-pill.info { background: #3b82f6; color: #fff; }
+.psm-pill.set-piece { background: #a855f7; color: #fff; }
 
 /* ── Sidebar ── */
 .psm-sidebar {

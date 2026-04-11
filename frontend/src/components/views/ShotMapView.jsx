@@ -184,7 +184,12 @@ export default function ShotMapView({ data, homeTeam, awayTeam }) {
                 </div>
                 <div className="psm-tt-footer">
                   {hoveredShot.isBigChance ? <span className="psm-pill warning">Big Chance</span> : null}
-                  {hoveredShot.isHeader ? <span className="psm-pill info">Header</span> : <span className="psm-pill text">Foot</span>}
+                  <span className={`psm-pill ${hoveredShot.bodyPart === 'Header' ? 'info' : 'text'}`}>
+                    {hoveredShot.bodyPart || (hoveredShot.isHeader ? 'Header' : 'Foot')}
+                  </span>
+                  {hoveredShot.origin && hoveredShot.origin !== 'Open Play' && (
+                    <span className="psm-pill set-piece">{hoveredShot.origin}</span>
+                  )}
                 </div>
               </div>
             </div>

@@ -207,6 +207,7 @@ def get_shot_map(csv_path: str) -> dict:
     """
     All shots with location and outcome category.
     Outcome colours: Goal (green), On Target/Saved (amber), Missed/Blocked (red).
+    Enhanced with shot origin context (body part, set piece origin).
     """
     df = _load_match(csv_path)
     home, away = _team_names(df)
@@ -220,8 +221,41 @@ def get_shot_map(csv_path: str) -> dict:
         else:
             return "off_target"
 
+    def _shot_body_part(row) -> str:
+        if row.get("is_header"):
+            return "Header"
+        elif row.get("is_left_foot"):
+            return "Left Foot"
+        elif row.get("is_right_foot"):
+            return "Right Foot"
+        return "Foot"
+
+    def _shot_origin(row, idx) -> str:
+        """Determine the set piece origin of a shot."""
+        if row.get("is_penalty"):
+            return "Penalty"
+        # Direct corner shot (the shot itself is a corner)
+        if row.get("is_corner"):
+            return "Corner Shot"
+        # Direct free kick shot (the shot itself is a free kick)
+        if row.get("is_freekick"):
+            return "Free Kick"
+        # Check if previous event from same team is a corner or free kick
+        same_team_prev = df[
+            (df.index < idx)
+            & (df["team"] == row["team"])
+            & (df["period"] == row["period"])
+        ]
+        if not same_team_prev.empty:
+            prev = same_team_prev.iloc[-1]
+            if prev.get("is_corner"):
+                return "From Corner"
+            if prev.get("is_freekick"):
+                return "From Free Kick"
+        return "Open Play"
+
     results = []
-    for _, row in shots.iterrows():
+    for idx, row in shots.iterrows():
         results.append({
             "player": row["playerName"],
             "team": row["team"],
@@ -231,6 +265,8 @@ def get_shot_map(csv_path: str) -> dict:
             "outcome": _outcome_category(row),
             "isBigChance": bool(row.get("is_big_chance", False)),
             "isHeader": bool(row.get("is_header", False)),
+            "bodyPart": _shot_body_part(row),
+            "origin": _shot_origin(row, idx),
             "goalMouthY": round(float(row["goal_mouth_y"]), 1) if pd.notna(row.get("goal_mouth_y")) else None,
             "goalMouthZ": round(float(row["goal_mouth_z"]), 1) if pd.notna(row.get("goal_mouth_z")) else None,
         })
@@ -477,9 +513,27 @@ def get_defensive_actions(csv_path: str) -> dict:
     """
     Location scatter of tackles, interceptions, fouls, and challenges per team.
     Allows the frontend to visualise pressing height and defensive shape.
+    Each action is tagged with isSetPiece so the frontend can compute
+    the mean defensive line from open-play actions only.
     """
     df = _load_match(csv_path)
     home, away = _team_names(df)
+
+    def _is_set_piece_action(idx: int) -> bool:
+        """Check if a defensive action occurred during a set piece sequence.
+        Look at the previous 3 events from the opposing team for a corner/FK delivery."""
+        row = df.loc[idx]
+        opp_team = away if row["team"] == home else home
+        prev_events = df[
+            (df.index < idx)
+            & (df["period"] == row["period"])
+        ].tail(4)
+        for _, prev in prev_events.iterrows():
+            if prev.get("is_corner") or prev.get("is_freekick"):
+                return True
+            if prev.get("type") == "GoalKick":
+                return True
+        return False
 
     def _actions(team: str) -> list[dict]:
         subset = df[
@@ -489,7 +543,7 @@ def get_defensive_actions(csv_path: str) -> dict:
             & df["y"].notna()
         ]
         results = []
-        for _, row in subset.iterrows():
+        for idx, row in subset.iterrows():
             results.append({
                 "player": row["playerName"],
                 "type": row["type"],
@@ -497,6 +551,7 @@ def get_defensive_actions(csv_path: str) -> dict:
                 "minute": int(row["match_minute"]),
                 "x": round(float(row["x"]), 1),
                 "y": round(float(row["y"]), 1),
+                "isSetPiece": _is_set_piece_action(idx),
             })
         return results
 
@@ -517,25 +572,40 @@ def get_zone_entries(csv_path: str) -> dict:
     - The Final Third (endX >= 67)
     - Zone 14 (the golden square: x 72-83, y 30-70)
 
+    Only open-play entries — excludes corners, free kicks, and goal kicks.
     Returns counts and individual entry vectors for visualisation.
     """
     df = _load_match(csv_path)
     home, away = _team_names(df)
 
     def _entries(team: str) -> dict:
-        t = df[(df["team"] == team) & (df["outcomeType"] == "Successful")]
+        t_all = df[df["team"] == team]
+        t = t_all[t_all["outcomeType"] == "Successful"]
+
+        # Exclude set pieces: corners, free kicks, goal kicks
+        open_play = t[
+            (~t["is_corner"].fillna(False).astype(bool))
+            & (~t["is_freekick"].fillna(False).astype(bool))
+            & (t["type"] != "GoalKick")
+        ]
 
         # Final third entries: events starting outside final third, ending inside
-        ft_entries = t[
-            (t["x"] < FINAL_THIRD_X) & (t["endX"] >= FINAL_THIRD_X)
-            & t["type"].isin({"Pass", "Carry"})
+        ft_entries = open_play[
+            (open_play["x"] < FINAL_THIRD_X) & (open_play["endX"] >= FINAL_THIRD_X)
+            & open_play["type"].isin({"Pass", "Carry"})
         ]
 
         # Zone 14 entries
-        z14_entries = t[
-            (t["endX"] >= ZONE_14_X_MIN) & (t["endX"] <= ZONE_14_X_MAX)
-            & (t["endY"] >= ZONE_14_Y_MIN) & (t["endY"] <= ZONE_14_Y_MAX)
-            & t["type"].isin({"Pass", "Carry"})
+        z14_entries = open_play[
+            (open_play["endX"] >= ZONE_14_X_MIN) & (open_play["endX"] <= ZONE_14_X_MAX)
+            & (open_play["endY"] >= ZONE_14_Y_MIN) & (open_play["endY"] <= ZONE_14_Y_MAX)
+            & open_play["type"].isin({"Pass", "Carry"})
+        ]
+
+        # Through Balls (Progressive only, both successful & unsuccessful)
+        tb_entries = t_all[
+            (t_all["is_through_ball"].fillna(False).astype(bool))
+            & (t_all["endX"] > t_all["x"])  # progressive filter
         ]
 
         def _to_vectors(subset):
@@ -546,6 +616,7 @@ def get_zone_entries(csv_path: str) -> dict:
                         "player": row["playerName"],
                         "type": row["type"],
                         "minute": int(row["match_minute"]),
+                        "outcome": row["outcomeType"],
                         "startX": round(float(row["x"]), 1),
                         "startY": round(float(row["y"]), 1),
                         "endX": round(float(row["endX"]), 1),
@@ -556,8 +627,10 @@ def get_zone_entries(csv_path: str) -> dict:
         return {
             "finalThirdCount": len(ft_entries),
             "zone14Count": len(z14_entries),
+            "throughBallCount": len(tb_entries),
             "finalThirdEntries": _to_vectors(ft_entries),
             "zone14Entries": _to_vectors(z14_entries),
+            "throughBallEntries": _to_vectors(tb_entries),
         }
 
     return {
@@ -909,4 +982,166 @@ def get_advanced_metrics(csv_path: str) -> dict:
         "awayTeam": away,
         "home": _metrics(home, away),
         "away": _metrics(away, home),
+    }
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  15. SET PIECE ANALYSIS
+# ══════════════════════════════════════════════════════════════════════════════
+
+def get_set_piece_analysis(csv_path: str) -> dict:
+    """
+    Comprehensive set piece analysis: corners and free kicks.
+
+    For each delivery:
+    - Start and end coordinates (delivery arrows)
+    - Whether the team won first contact
+    - Whether the delivery resulted in a shot on goal (within next 4 same-team events)
+
+    Summary stats:
+    - Set piece shots/goals vs open play shots/goals
+    - Penalty goals vs non-penalty goals
+    - First contact rates for corners and free kicks
+    """
+    df = _load_match(csv_path)
+    home, away = _team_names(df)
+
+    def _analyze_team(team: str) -> dict:
+        t_all = df.copy().reset_index(drop=True)
+
+        # ── Corner deliveries ─────────────────────────────────────────
+        corner_mask = (
+            (t_all["team"] == team)
+            & (t_all["is_corner"].fillna(False).astype(bool))
+            & t_all["x"].notna()
+            & t_all["y"].notna()
+        )
+        corners = []
+        for idx in t_all[corner_mask].index:
+            row = t_all.loc[idx]
+            delivery = _build_delivery(t_all, row, idx, team)
+            corners.append(delivery)
+
+        # ── Free kick deliveries ──────────────────────────────────────
+        fk_mask = (
+            (t_all["team"] == team)
+            & (t_all["is_freekick"].fillna(False).astype(bool))
+            & t_all["x"].notna()
+            & t_all["y"].notna()
+        )
+        free_kicks = []
+        for idx in t_all[fk_mask].index:
+            row = t_all.loc[idx]
+            delivery = _build_delivery(t_all, row, idx, team)
+            free_kicks.append(delivery)
+
+        # ── Summary stats (derived from delivery data — same forward-looking logic) ──
+        all_deliveries = corners + free_kicks
+        total_set_pieces = len(all_deliveries)
+        led_to_shot = sum(1 for d in all_deliveries if d["resultedInShot"])
+        led_to_goal = sum(1 for d in all_deliveries if d["shotOutcome"] == "Goal")
+        led_to_big_chance = sum(1 for d in all_deliveries if d.get("resultedInBigChance"))
+        first_contacts_won = sum(1 for d in all_deliveries if d["firstContact"])
+
+        # Assists from set pieces (corners and free kicks)
+        assist_corners = len(t_all[
+            (t_all["team"] == team)
+            & (t_all["is_assist_corner"].fillna(False).astype(bool))
+        ]) if "is_assist_corner" in t_all.columns else 0
+        assist_fks = len(t_all[
+            (t_all["team"] == team)
+            & (t_all["is_assist_freekick"].fillna(False).astype(bool))
+        ]) if "is_assist_freekick" in t_all.columns else 0
+
+        # Penalty goals (separate from set piece breakdown)
+        penalty_goals = len(t_all[
+            (t_all["team"] == team)
+            & (t_all["type"] == "Goal")
+            & (t_all["is_penalty"].fillna(False).astype(bool))
+        ])
+
+        # Corner-specific
+        corner_first_contacts = sum(1 for c in corners if c["firstContact"])
+        corner_led_to_shot = sum(1 for c in corners if c["resultedInShot"])
+
+        # FK-specific
+        fk_first_contacts = sum(1 for f in free_kicks if f["firstContact"])
+        fk_led_to_shot = sum(1 for f in free_kicks if f["resultedInShot"])
+
+        summary = {
+            "totalSetPieces": total_set_pieces,
+            "ledToShot": led_to_shot,
+            "ledToBigChance": led_to_big_chance,
+            "ledToGoal": led_to_goal,
+            "firstContactsWon": first_contacts_won,
+            "firstContactPct": round(first_contacts_won / total_set_pieces * 100, 1) if total_set_pieces else 0,
+            "setPieceAssists": assist_corners + assist_fks,
+            "assistCorners": assist_corners,
+            "assistFreeKicks": assist_fks,
+            "penaltyGoals": penalty_goals,
+            "totalCorners": len(corners),
+            "cornerFirstContacts": corner_first_contacts,
+            "cornerFirstContactPct": round(corner_first_contacts / len(corners) * 100, 1) if corners else 0,
+            "cornerLedToShot": corner_led_to_shot,
+            "totalFreeKicks": len(free_kicks),
+            "fkFirstContacts": fk_first_contacts,
+            "fkFirstContactPct": round(fk_first_contacts / len(free_kicks) * 100, 1) if free_kicks else 0,
+            "fkLedToShot": fk_led_to_shot,
+        }
+
+        return {
+            "corners": corners,
+            "freeKicks": free_kicks,
+            "summary": summary,
+        }
+
+    return {
+        "homeTeam": home,
+        "awayTeam": away,
+        "home": _analyze_team(home),
+        "away": _analyze_team(away),
+    }
+
+
+def _build_delivery(df: pd.DataFrame, row: pd.Series, idx: int, team: str) -> dict:
+    """
+    Build a single set piece delivery dict with first contact and shot outcome.
+    """
+    end_x = row["endX"] if pd.notna(row.get("endX")) else row["x"]
+    end_y = row["endY"] if pd.notna(row.get("endY")) else row["y"]
+
+    # Look at next events to determine first contact and shot result
+    subsequent = df[(df.index > idx) & (df["period"] == row["period"])].head(5)
+
+    first_contact = False
+    resulted_in_shot = False
+    resulted_in_big_chance = False
+    shot_outcome = None
+
+    if not subsequent.empty:
+        next_event = subsequent.iloc[0]
+        first_contact = next_event.get("team") == team
+
+        # Check next 4 same-team events for a shot
+        same_team_subsequent = subsequent[subsequent["team"] == team].head(4)
+        for _, evt in same_team_subsequent.iterrows():
+            if evt["type"] in SHOT_TYPES:
+                resulted_in_shot = True
+                shot_outcome = "Goal" if evt["type"] == "Goal" else "Shot"
+                if evt.get("is_big_chance"):
+                    resulted_in_big_chance = True
+                break
+
+    return {
+        "player": row.get("playerName", ""),
+        "minute": int(row.get("match_minute", 0)),
+        "startX": round(float(row["x"]), 1),
+        "startY": round(float(row["y"]), 1),
+        "endX": round(float(end_x), 1),
+        "endY": round(float(end_y), 1),
+        "firstContact": first_contact,
+        "resultedInShot": resulted_in_shot,
+        "resultedInBigChance": resulted_in_big_chance,
+        "shotOutcome": shot_outcome,
+        "outcome": row.get("outcomeType", ""),
     }

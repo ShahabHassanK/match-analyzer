@@ -16,15 +16,16 @@ export default function DefensiveActionsView({ data, homeTeam, awayTeam }) {
 
     const validActions = teamData.filter(a => a.outcome !== 'Unsuccessful');
     
-    // 1. Median Pressing Line Calculation
-    const xCoords = validActions.map(a => a.x).sort((a, b) => a - b);
+    // 1. Median Pressing Line — open play only (exclude set piece defensive actions)
+    const openPlayActions = validActions.filter(a => !a.isSetPiece);
+    const xCoords = openPlayActions.map(a => a.x).sort((a, b) => a - b);
     let median = null;
     if (xCoords.length > 0) {
       const mid = Math.floor(xCoords.length / 2);
       median = xCoords.length % 2 !== 0 ? xCoords[mid] : (xCoords[mid - 1] + xCoords[mid]) / 2.0;
     }
 
-    // 2. Pitch Thirds Distribution Calculation
+    // 2. Pitch Thirds Distribution Calculation (uses ALL valid actions)
     const thirdsCount = { def: 0, mid: 0, att: 0 };
     validActions.forEach(a => {
         if (a.x < 33.3) thirdsCount.def++;
