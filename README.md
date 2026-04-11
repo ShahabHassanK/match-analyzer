@@ -292,7 +292,7 @@ Tracks how each team penetrates into dangerous areas exclusively from open-play:
 
 Visualized as zone-split bar charts with entry method breakdowns (pass vs carry) and top penetrator scoreboards.
 
-![Through Balls](viz/throughball.png)
+![Through Balls](viz/throughball.PNG)
 ![Zone Entries](viz/finalthird.png)
 
 ---
@@ -309,8 +309,8 @@ Highlights entries into **Zone 14** (the central pocket just outside the penalty
 
 Comprehensive mapping of Corner and Free Kick deliveries, tracking player execution, first-contact win rates, and subsequent shot outcomes. Evaluates set-piece danger against open-play production through a robust analytics summary block.
 
-![Corners](viz/corners.png)
-![Free Kicks](viz/freekicks.png)
+![Corners](viz/corners.PNG)
+![Free Kicks](viz/freekick.PNG)
 
 ---
 
