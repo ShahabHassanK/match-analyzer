@@ -251,3 +251,157 @@
 
 .dv-tt-row span.val { color: var(--text-primary); font-weight: 700; }
 .dv-tt-dim { color: var(--text-muted); font-size: 10px; margin-top: 2px; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PRESSING SUB-TAB STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Filters Container (stacks btn-groups vertically) ── */
+.dv-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Press Zone Overlay ── */
+.dv-press-zone {
+  fill: rgba(249, 115, 22, 0.06);
+  stroke: rgba(249, 115, 22, 0.25);
+  stroke-width: 0.5;
+  stroke-dasharray: 3, 2;
+}
+
+/* ── Turnover Glow Markers ── */
+.dv-marker.turnover-glow {
+  fill: #f97316;
+  stroke: rgba(249, 115, 22, 0.5);
+  stroke-width: 1.5px;
+  animation: turnovers-pulse 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 3px rgba(249, 115, 22, 0.6));
+}
+
+.dv-marker.turnover-glow:hover {
+  stroke: white !important;
+  stroke-width: 2px !important;
+  filter: drop-shadow(0 0 6px rgba(249, 115, 22, 1)) !important;
+}
+
+@keyframes turnovers-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ── Normal Press Markers (no shot) ── */
+.dv-marker.press-normal {
+  opacity: 0.55;
+  stroke: var(--bg-card);
+  stroke-width: 0.4px;
+}
+.dv-marker.press-normal:hover {
+  opacity: 1;
+  stroke: white !important;
+  stroke-width: 1.5px !important;
+}
+
+/* ── Shot Chain Line ── */
+.dv-shot-chain {
+  stroke-dasharray: 2, 2;
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+.dv-shot-chain.home { stroke: var(--color-home); }
+.dv-shot-chain.away { stroke: var(--color-away); }
+
+/* ── Shot Target Indicator ── */
+.dv-shot-target {
+  fill: rgba(249, 115, 22, 0.2);
+  stroke: #f97316;
+  stroke-width: 0.6;
+  stroke-dasharray: 1.5, 1;
+  pointer-events: none;
+}
+
+.dv-shot-label {
+  font-size: 3.5px;
+  pointer-events: none;
+}
+
+/* ── Tooltip: Shot Chain ── */
+.dv-tt-shot-chain {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(249, 115, 22, 0.4);
+}
+
+.dv-tt-chain-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: #f97316;
+  margin-bottom: 4px;
+  letter-spacing: 0.03em;
+}
+
+/* ── Top Pressers List ── */
+.dv-presser-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dv-presser-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.dv-presser-item:last-child { border-bottom: none; }
+
+.dv-presser-rank {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg-badge);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.dv-presser-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dv-presser-stats {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.dv-presser-total {
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.dv-presser-shots {
+  font-size: 10px;
+  color: #f97316;
+  font-weight: 700;
+}
+

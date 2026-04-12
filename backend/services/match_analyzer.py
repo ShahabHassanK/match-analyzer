@@ -657,13 +657,19 @@ def get_xT_momentum(csv_path: str, window: int = 5) -> dict:
 
 def get_defensive_actions(csv_path: str) -> dict:
     """
-    Location scatter of tackles, interceptions, fouls, and challenges per team.
-    Allows the frontend to visualise pressing height and defensive shape.
-    Each action is tagged with isSetPiece so the frontend can compute
-    the mean defensive line from open-play actions only.
+    Location scatter of tackles, interceptions, fouls, challenges, and ball
+    recoveries per team.  Allows the frontend to visualise pressing height,
+    defensive shape, and high-turnover pressing chains.
+
+    Each action is tagged with:
+    - isSetPiece   — whether it occurred during a set-piece sequence
+    - leadsToShot  — whether a same-team shot followed within 15 seconds
+    - shot*        — location / outcome of the resulting shot (if any)
     """
     df = _load_match(csv_path)
     home, away = _team_names(df)
+
+    PRESSING_ACTIONS = DEFENSIVE_ACTIONS | {"BallRecovery"}
 
     def _is_set_piece_action(idx: int) -> bool:
         """Check if a defensive action occurred during a set piece sequence.
@@ -681,16 +687,46 @@ def get_defensive_actions(csv_path: str) -> dict:
                 return True
         return False
 
+    def _find_shot_after(idx: int, team: str, max_seconds: int = 15) -> dict | None:
+        """Look ahead from *idx* for a same-team shot within *max_seconds*."""
+        row = df.loc[idx]
+        action_time = float(row["minute"]) * 60 + float(row.get("second", 0) or 0)
+        action_period = row["period"]
+
+        subsequent = df[
+            (df.index > idx)
+            & (df["period"] == action_period)
+        ]
+
+        for s_idx, s_row in subsequent.iterrows():
+            event_time = float(s_row["minute"]) * 60 + float(s_row.get("second", 0) or 0)
+            if event_time - action_time > max_seconds:
+                break
+            if s_row["team"] == team and s_row["type"] in SHOT_TYPES:
+                return {
+                    "shotPlayer": s_row.get("playerName", ""),
+                    "shotMinute": int(s_row["match_minute"]),
+                    "shotX": round(float(s_row["x"]), 1) if pd.notna(s_row.get("x")) else None,
+                    "shotY": round(float(s_row["y"]), 1) if pd.notna(s_row.get("y")) else None,
+                    "shotOutcome": "Goal" if s_row["type"] == "Goal" else s_row["outcomeType"],
+                }
+            # If the opponent gains possession, the pressing chain is broken
+            if s_row["team"] != team and s_row["type"] in {"Pass", "Carry", "TakeOn"}:
+                break
+
+        return None
+
     def _actions(team: str) -> list[dict]:
         subset = df[
             (df["team"] == team)
-            & df["type"].isin(DEFENSIVE_ACTIONS)
+            & df["type"].isin(PRESSING_ACTIONS)
             & df["x"].notna()
             & df["y"].notna()
         ]
         results = []
         for idx, row in subset.iterrows():
-            results.append({
+            shot_info = _find_shot_after(idx, team)
+            action_data = {
                 "player": row["playerName"],
                 "type": row["type"],
                 "outcome": row["outcomeType"],
@@ -698,7 +734,11 @@ def get_defensive_actions(csv_path: str) -> dict:
                 "x": round(float(row["x"]), 1),
                 "y": round(float(row["y"]), 1),
                 "isSetPiece": _is_set_piece_action(idx),
-            })
+                "leadsToShot": shot_info is not None,
+            }
+            if shot_info:
+                action_data.update(shot_info)
+            results.append(action_data)
         return results
 
     return {
