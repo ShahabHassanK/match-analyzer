@@ -275,6 +275,14 @@ A directed graph overlaid on the pitch showing average player positions as nodes
 
 ---
 
+### Tactical Shape
+
+Maps the average in-possession shape of the team. This visualization is generated with strict tactical fidelity by aggressively filtering out all set pieces, kick-offs, penalties, and post-set-piece scrambles. Nodes accurately reflect ball interactions. Substitutes are clearly delineated as ghost nodes, preventing them from skewing the primary XI structure. Interactive tooltips reveal individual touch volumes and passing involvement.
+
+![Tactical Shape](viz/tacticalshape.png)
+
+---
+
 ### Defensive Actions
 
 Tackles, interceptions, and clearances plotted on a full pitch, grouped by pitch zone. Helps identify where each team wins the ball back most frequently. The median **Defensive Line** is calculated exclusively from open-play defensive actions, filtering out set-piece congestion to accurately reflect open-play pressing height.
@@ -436,6 +444,7 @@ All endpoints are prefixed with `/api`.
 | `GET` | `/match/{id}/defensive-actions` | Defensive action heatmap |
 | `GET` | `/match/{id}/zone-entries` | Zone entry and through ball statistics |
 | `GET` | `/match/{id}/set-pieces` | Set piece analysis (Corners & Free Kicks) |
+| `GET` | `/match/{id}/average-shape` | Average tactical in-possession shape |
 | `GET` | `/match/{id}/territory` | Touch density heatmap |
 | `GET` | `/match/{id}/momentum` | Match momentum timeline |
 | `GET` | `/match/{id}/ppda` | PPDA by half |

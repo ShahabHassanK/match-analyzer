@@ -1,0 +1,211 @@
+.average-shape-view {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.as-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.as-btn-group {
+  display: flex;
+  gap: 8px;
+  background-color: var(--bg-card);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.as-btn {
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.as-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.as-btn.active.home {
+  background-color: var(--color-home);
+  color: white;
+}
+
+.as-btn.active.away {
+  background-color: var(--color-away);
+  color: white;
+}
+
+.as-legend {
+  display: flex;
+  gap: 16px;
+  background-color: var(--bg-card);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.as-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.as-node-legend {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.as-node-legend.solid.home {
+  background-color: var(--color-home);
+  border: 1px solid var(--color-home);
+}
+.as-node-legend.solid.away {
+  background-color: var(--color-away);
+  border: 1px solid var(--color-away);
+}
+
+.as-node-legend.ghost {
+  background-color: transparent;
+  border-style: dashed;
+  border-width: 2px;
+  opacity: 0.6;
+}
+.as-node-legend.ghost.home { border-color: var(--color-home); }
+.as-node-legend.ghost.away { border-color: var(--color-away); }
+
+
+.as-pitch-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  background-color: #111827; /* Dark turf base */
+}
+
+.as-pitch-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.as-turf {
+  fill: #111827;
+}
+
+.as-node-group {
+  cursor: pointer;
+}
+
+.as-node {
+  transition: all 0.2s ease;
+}
+
+/* Starters */
+.as-node.starter.home {
+  fill: var(--color-home);
+  stroke: #ffffff;
+  stroke-width: 0.2;
+}
+
+.as-node.starter.away {
+  fill: var(--color-away);
+  stroke: #ffffff;
+  stroke-width: 0.2;
+}
+
+/* Substitutes */
+.as-node.sub {
+  fill: transparent;
+  stroke-width: 0.4;
+  stroke-dasharray: 0.4, 0.4;
+  opacity: 0.7;
+}
+
+.as-node.sub.home {
+  stroke: var(--color-home);
+}
+
+.as-node.sub.away {
+  stroke: var(--color-away);
+}
+
+
+.as-node-text {
+  font-size: 1.8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  fill: #ffffff;
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+.as-node.sub + .as-node-text {
+  opacity: 0.8;
+  font-size: 1.6px;
+}
+
+.as-node-group:hover .as-node {
+  r: 3.2;
+  filter: brightness(1.2);
+}
+
+/* Tooltip */
+.as-tooltip {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  color: var(--text-primary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  min-width: 140px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.as-tt-player {
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 4px;
+}
+
+.as-tt-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.as-tt-row .val {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.as-tt-sub {
+  margin-top: 6px;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+}

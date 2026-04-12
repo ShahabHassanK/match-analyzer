@@ -235,6 +235,13 @@ async def api_territory(match_id: str):
     return {"status": "ok", "data": match_analyzer.get_territory_heatmap(csv_path)}
 
 
+@app.get("/api/match/{match_id}/average-shape")
+async def api_average_shape(match_id: str):
+    """Average in-possession tactical shape per player."""
+    csv_path = _resolve_csv(match_id)
+    return {"status": "ok", "data": match_analyzer.get_average_shape(csv_path)}
+
+
 @app.get("/api/match/{match_id}/momentum")
 async def api_momentum(
     match_id: str,

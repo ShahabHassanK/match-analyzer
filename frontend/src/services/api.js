@@ -112,3 +112,7 @@ export function fetchAdvancedMetrics(matchId) {
 export function fetchSetPieces(matchId) {
   return request(`/match/${matchId}/set-pieces`);
 }
+
+export function fetchAverageShape(matchId) {
+  return request(`/match/${matchId}/average-shape`);
+}

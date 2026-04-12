@@ -455,6 +455,96 @@ def get_territory_heatmap(csv_path: str, grid_size: int = 12) -> dict:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+#  6B. AVERAGE IN-POSSESSION SHAPE
+# ══════════════════════════════════════════════════════════════════════════════
+
+def get_average_shape(csv_path: str) -> dict:
+    """
+    Average in-possession shape per player.
+    Excludes set pieces and kick-offs to reflect strict open-play structure.
+    Calculates average X,Y for each player during ball interactions.
+    Identifies substitutes to render them differently.
+    """
+    df = _load_match(csv_path)
+    home, away = _team_names(df)
+
+    def _get_initials(name):
+        parts = str(name).split()
+        if not parts:
+            return ""
+        if len(parts) == 1:
+            return parts[0][:2].upper()
+        return (parts[0][0] + parts[-1][0]).upper()
+
+    # Determine substitutes (players subbed ON)
+    subs_on = set(df[df["type"] == "SubstitutionOn"]["playerName"].unique())
+
+    # Strict open play filter
+    open_play = df[
+        (~df["is_corner"].fillna(False).astype(bool))
+        & (~df["is_freekick"].fillna(False).astype(bool))
+        & (~df["type"].isin({"GoalKick", "Start", "End"}))
+        & (~df["is_penalty"].fillna(False).astype(bool))
+    ]
+
+    def _shape(team: str) -> list[dict]:
+        # Events where team has possession and we have location
+        team_touches = open_play[(open_play["team"] == team) & open_play["x"].notna() & open_play["y"].notna()]
+        
+        # Calculate passes played and received using the full un-filtered sequential df for accurate next-event tracking
+        team_events_full = df[df["team"] == team]
+        team_event_indices = team_events_full.index.tolist()
+        
+        passes_played_counts = defaultdict(int)
+        passes_received_counts = defaultdict(int)
+        
+        for i, idx in enumerate(team_event_indices):
+            row = df.loc[idx]
+            if row["type"] == "Pass" and row["outcomeType"] == "Successful":
+                passer = row["playerName"]
+                if pd.notna(passer):
+                    passes_played_counts[passer] += 1
+                
+                # Receiver is the player in the next consecutive event for the team
+                if i + 1 < len(team_event_indices):
+                    next_idx = team_event_indices[i + 1]
+                    next_row = df.loc[next_idx]
+                    receiver = next_row["playerName"]
+                    if pd.notna(receiver) and receiver != passer:
+                        passes_received_counts[receiver] += 1
+
+        results = []
+        for player, group in team_touches.groupby("playerName"):
+            count = len(group)
+            if count < 3:  # Too few touches to establish a shape
+                continue
+                
+            avg_x = group["x"].mean()
+            avg_y = group["y"].mean()
+
+            results.append({
+                "player": player,
+                "initials": _get_initials(player),
+                "x": round(float(avg_x), 1),
+                "y": round(float(avg_y), 1),
+                "touches": count,
+                "passesPlayed": passes_played_counts[player],
+                "passesReceived": passes_received_counts[player],
+                "isSub": player in subs_on
+            })
+            
+        # Sort by touches mostly to layer them predictably
+        results.sort(key=lambda x: x["touches"], reverse=True)
+        return results
+
+    return {
+        "homeTeam": home, "awayTeam": away,
+        "home": _shape(home),
+        "away": _shape(away)
+    }
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 #  7. xT MOMENTUM TIMELINE
 # ══════════════════════════════════════════════════════════════════════════════
 

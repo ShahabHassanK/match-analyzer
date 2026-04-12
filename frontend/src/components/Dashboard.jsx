@@ -16,6 +16,7 @@ import PassNetworkView from './views/PassNetworkView';
 import DefensiveActionsView from './views/DefensiveActionsView';
 import ZoneEntriesView from './views/ZoneEntriesView';
 import SetPiecesView from './views/SetPiecesView';
+import AverageShapeView from './views/AverageShapeView';
 import PlayerHeatmapView from './views/PlayerHeatmapView';
 import PlayerPassSonarView from './views/PlayerPassSonarView';
 import PlayerActionsView from './views/PlayerActionsView';
@@ -31,6 +32,7 @@ import {
   fetchDefensiveActions,
   fetchZoneEntries,
   fetchSetPieces,
+  fetchAverageShape,
   fetchPlayerHeatmap,
   fetchPlayerPassSonar,
 } from '../services/api';
@@ -42,6 +44,7 @@ const TEAM_VIEWS = [
   { id: 'defensive',   label: 'Defensive Actions' },
   { id: 'zoneEntries', label: 'Zone Entries' },
   { id: 'setPieces',   label: 'Set Pieces' },
+  { id: 'averageShape',label: 'Tactical Shape' },
 ];
 
 const PLAYER_VIEWS = [
@@ -97,6 +100,7 @@ export default function Dashboard({ matchId, onBack }) {
       defensive: () => fetchDefensiveActions(matchId),
       zoneEntries: () => fetchZoneEntries(matchId),
       setPieces: () => fetchSetPieces(matchId),
+      averageShape: () => fetchAverageShape(matchId),
       playerHeatmap: () => selectedPlayer ? fetchPlayerHeatmap(matchId, selectedPlayer) : null,
       playerPassSonar: () => selectedPlayer ? fetchPlayerPassSonar(matchId, selectedPlayer) : null,
     };
@@ -148,6 +152,9 @@ export default function Dashboard({ matchId, onBack }) {
     }
     if (activeView === 'setPieces') {
       return <SetPiecesView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
+    }
+    if (activeView === 'averageShape') {
+      return <AverageShapeView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
     }
     
     return <div className="dash-error container"><p>Visualisation not built yet.</p></div>;
