@@ -66,6 +66,44 @@ def _team_names(df: pd.DataFrame) -> tuple[str, str]:
     return home, away
 
 
+def _get_player_match_stats(df: pd.DataFrame) -> dict:
+    """
+    Calculate match-wide player involvement:
+    - total touches (any event with position and playerName)
+    - successful passes played
+    - successful passes received
+    """
+    stats = {}
+    
+    # Passes stats
+    passes = df[(df["type"] == "Pass") & (df["outcomeType"] == "Successful")]
+    for player, count in passes["playerName"].value_counts().items():
+        if player not in stats: stats[player] = {"touches": 0, "passesPlayed": 0, "passesReceived": 0}
+        stats[player]["passesPlayed"] = int(count)
+        
+    # Received stats (sequential)
+    for team in df["team"].unique():
+        t_events = df[df["team"] == team]
+        indices = t_events.index.tolist()
+        for i, idx in enumerate(indices):
+            row = df.loc[idx]
+            if row["type"] == "Pass" and row["outcomeType"] == "Successful":
+                if i + 1 < len(indices):
+                    next_row = df.loc[indices[i+1]]
+                    receiver = next_row["playerName"]
+                    if pd.notna(receiver) and receiver != row["playerName"]:
+                        if receiver not in stats: stats[receiver] = {"touches": 0, "passesPlayed": 0, "passesReceived": 0}
+                        stats[receiver]["passesReceived"] += 1
+
+    # Touches (all unique events with location)
+    touches = df[df["playerName"].notna() & df["x"].notna() & df["y"].notna()]
+    for player, count in touches["playerName"].value_counts().items():
+        if player not in stats: stats[player] = {"touches": 0, "passesPlayed": 0, "passesReceived": 0}
+        stats[player]["touches"] = int(count)
+
+    return stats
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  1. MATCH SUMMARY
 # ══════════════════════════════════════════════════════════════════════════════
@@ -274,6 +312,7 @@ def get_shot_map(csv_path: str) -> dict:
     return {
         "homeTeam": home, "awayTeam": away,
         "shots": results,
+        "playerStats": _get_player_match_stats(df),
     }
 
 
@@ -313,6 +352,14 @@ def get_pass_network(csv_path: str, team: str | None = None) -> dict:
 
         edge_counts = defaultdict(int)
         player_positions = defaultdict(lambda: {"x_sum": 0, "y_sum": 0, "count": 0})
+        passes_played_counts = defaultdict(int)
+        passes_received_counts = defaultdict(int)
+        touches_counts = defaultdict(int)
+
+        # Pre-calculate touches for the specific context
+        for _, row in team_events.iterrows():
+            if pd.notna(row["playerName"]):
+                touches_counts[row["playerName"]] += 1
 
         for idx in pass_indices:
             row = df.loc[idx]
@@ -334,6 +381,8 @@ def get_pass_network(csv_path: str, team: str | None = None) -> dict:
                 receiver = next_row["playerName"]
                 if pd.notna(receiver) and receiver != passer:
                     edge_counts[(passer, receiver)] += 1
+                    passes_played_counts[passer] += 1
+                    passes_received_counts[receiver] += 1
 
         # Build nodes
         nodes = []
@@ -344,6 +393,9 @@ def get_pass_network(csv_path: str, team: str | None = None) -> dict:
                     "avgX": round(pos["x_sum"] / pos["count"], 1),
                     "avgY": round(pos["y_sum"] / pos["count"], 1),
                     "passCount": pos["count"],
+                    "touches": touches_counts[player],
+                    "passesPlayed": passes_played_counts[player],
+                    "passesReceived": passes_received_counts[player],
                 })
 
         # Build edges (only keep edges with >= 3 passes for clarity)
@@ -362,7 +414,11 @@ def get_pass_network(csv_path: str, team: str | None = None) -> dict:
             "edges": edges
         }
 
-    return {"homeTeam": home, "awayTeam": away, "networks": networks}
+    return {
+        "homeTeam": home, "awayTeam": away, 
+        "networks": networks,
+        "playerStats": _get_player_match_stats(df),
+    }
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -649,6 +705,7 @@ def get_defensive_actions(csv_path: str) -> dict:
         "homeTeam": home, "awayTeam": away,
         "home": _actions(home),
         "away": _actions(away),
+        "playerStats": _get_player_match_stats(df),
     }
 
 
@@ -727,6 +784,7 @@ def get_zone_entries(csv_path: str) -> dict:
         "homeTeam": home, "awayTeam": away,
         "home": _entries(home),
         "away": _entries(away),
+        "playerStats": _get_player_match_stats(df),
     }
 
 
@@ -1190,6 +1248,7 @@ def get_set_piece_analysis(csv_path: str) -> dict:
         "awayTeam": away,
         "home": _analyze_team(home),
         "away": _analyze_team(away),
+        "playerStats": _get_player_match_stats(df),
     }
 
 

@@ -53,7 +53,7 @@ export default function SetPiecesView({ data, homeTeam, awayTeam }) {
 
   // Coordinate mapping
   const scaleX = (val) => (val / 100) * 105;
-  const scaleY = (val) => (val / 100) * 68;
+  const scaleY = (val) => ((100 - val) / 100) * 68;
 
   const getDeliveryColor = (delivery) => {
     if (delivery.shotOutcome === 'Goal') return OUTCOME_COLORS.goal;

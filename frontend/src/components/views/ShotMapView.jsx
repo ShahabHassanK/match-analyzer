@@ -47,9 +47,11 @@ export default function ShotMapView({ data, homeTeam, awayTeam }) {
   // We map taking x: 50->100 to svgY: 100->0.
   // And y: 0->100 to svgX: 0->100.
   const mapY = (x) => Math.max(0, Math.min(100, (100 - x) * 2));
-  const mapX = (y) => y; // WhoScored Y is essentially pitch width
+  const mapX = (y) => 100 - y; // WhoScored Y is essentially pitch width, inverted for broadcast view, inverted for broadcast view
 
   // Distance calculator (rough metres from center of goal)
+  const scaleX = (val) => (val / 100) * 105;
+  const scaleY = (val) => ((100 - val) / 100) * 68; // 68m width
   const calcDist = (sx, sy) => {
     const dx = (sx - 50) * 0.68; // 68m width
     const dy = sy * 1.05; // 105m length

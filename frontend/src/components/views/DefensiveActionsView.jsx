@@ -39,7 +39,7 @@ export default function DefensiveActionsView({ data, homeTeam, awayTeam }) {
 
   // Transformation Helpers
   const scaleX = (val) => (val / 100) * 105;
-  const scaleY = (val) => (val / 100) * 68;
+  const scaleY = (val) => ((100 - val) / 100) * 68;
   const renderShape = (action, idx) => {
     const cx = scaleX(action.x);
     const cy = scaleY(action.y);

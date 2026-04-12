@@ -35,7 +35,7 @@ export default function ZoneEntriesView({ data, homeTeam, awayTeam }) {
 
   // Geometry Translation
   const scaleX = (val) => (val / 100) * 105;
-  const scaleY = (val) => (val / 100) * 68;
+  const scaleY = (val) => ((100 - val) / 100) * 68;
 
   const handleMouseMove = (e) => {
     setMousePos({ x: e.clientX, y: e.clientY });

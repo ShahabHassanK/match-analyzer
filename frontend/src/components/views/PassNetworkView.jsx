@@ -22,6 +22,9 @@ export default function PassNetworkView({ data, homeTeam, awayTeam }) {
     return {
       player,
       totalPasses: hoveredNode.passCount,
+      touches: hoveredNode.touches || 0,
+      passesPlayed: hoveredNode.passesPlayed || 0,
+      passesReceived: hoveredNode.passesReceived || 0,
       topTargets: passesTo.slice(0, 3),
       topProviders: receivedFrom.slice(0, 3),
     };
@@ -197,7 +200,10 @@ export default function PassNetworkView({ data, homeTeam, awayTeam }) {
             <div className="ppn-legend">
               <h4 className="ppn-sidebar-title">Player Focus</h4>
               <div className="ppn-tt-player">{activeStats.player}</div>
-              <p className="ppn-insight-row"><strong>Total Passes:</strong> {activeStats.totalPasses}</p>
+              <div className="ppn-insight-row"><strong>Touches:</strong> {activeStats.touches}</div>
+              <div className="ppn-insight-row"><strong>Passes Played:</strong> {activeStats.passesPlayed}</div>
+              <div className="ppn-insight-row"><strong>Passes Received:</strong> {activeStats.passesReceived}</div>
+              <div className="ppn-insight-row"><strong>Success Passes:</strong> {activeStats.totalPasses}</div>
               
               <h4 className="ppn-sidebar-title" style={{ marginTop: '24px' }}>Top Recipients</h4>
               <div className="ppn-insight">
