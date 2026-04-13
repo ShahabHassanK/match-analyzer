@@ -1,0 +1,177 @@
+.goal-replay-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.goal-selector {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.goal-selector select {
+  background: #1e293b;
+  color: #ffffff;
+  border: 1px solid #334155;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.playback-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.playback-controls button {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.playback-controls button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.playback-controls button.play-btn {
+  background: #10b981;
+  color: #0f172a;
+}
+.playback-controls button.play-btn:hover:not(:disabled) {
+  background: #34d399;
+}
+
+.playback-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Pitch & Drawing Area */
+.pitch-container {
+  position: relative;
+  background-color: var(--pitch-bg, #111827);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  overflow: visible;
+  width: 100%;
+  max-width: 900px;
+  aspect-ratio: 105 / 68; /* Horizontal football pitch proportions */
+  margin: 0 auto;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+/* Scaled SVG covering the pitch */
+.drawing-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.historical-line {
+  stroke-dasharray: 2, 4;
+}
+
+.animating-line {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawLine 0.8s linear forwards;
+}
+
+@keyframes drawLine {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Markers and the Ball */
+.event-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.marker-dot {
+  width: 28px;
+  height: 28px;
+  background: #334155;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.marker-dot.home {
+  background: #3b82f6; /* Blue for home */
+}
+
+.marker-dot.away {
+  background: #ef4444; /* Red for away */
+}
+
+.marker-label {
+  background: rgba(15, 23, 42, 0.8);
+  color: #fff;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  border: 1px solid rgba(255,255,255,0.2);
+  font-weight: 600;
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: translate(-50%, -40%) scale(0.5); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* The standalone animated ball */
+.football {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.5));
+}
+
+.football.gliding {
+  transition: left 0.8s linear, top 0.8s linear;
+}
+
+.no-data {
+  text-align: center;
+  padding: 4rem;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+}

@@ -238,6 +238,7 @@ away_score = raw_away_goals - og_away_committed + og_home_committed
 | `get_player_pass_sonar` | `/match/{id}/player/{name}/pass-sonar` | Directional pass distribution |
 | `get_ppda` | `/match/{id}/ppda` | Pressing intensity per half |
 | `get_momentum` | `/match/{id}/momentum` | Rolling action-density timeline |
+| `get_goal_build_ups` | `/match/{id}/goal-replays` | Full event sequences for all open-play goals |
 | `get_advanced_metrics` | `/match/{id}/advanced-metrics` | Full tactical metrics terminal |
 
 ---
@@ -245,6 +246,15 @@ away_score = raw_away_goals - og_away_committed + og_home_committed
 ## Stage 4 — Visualizations
 
 All visualizations are built in pure SVG rendered by React components, matching a consistent dark-mode design system (`#111827` pitch, `rgba(255,255,255,0.25)` lines).
+
+### 2D Goal Replays
+
+A full broadcast-style interactive replay engine that automatically reconstructs the build-up sequence leading to every open-play goal.
+Features dynamic half-time coordinate mirroring so teams attack the correct physical goal-mouth based on the match period, and full event-chain tracing (from deep phases or corners all the way to the final strike). Click **"Play"** to watch the tactical sequence unfold with animated passing lanes, positional markers, and ball flight paths.
+
+![2D Goal Replay Animation](viz/2D-Goal-Replay.gif)
+
+---
 
 ### Match Facts
 
@@ -463,6 +473,7 @@ All endpoints are prefixed with `/api`.
 | `GET` | `/match/{id}/average-shape` | Average tactical in-possession shape |
 | `GET` | `/match/{id}/territory` | Touch density heatmap |
 | `GET` | `/match/{id}/momentum` | Match momentum timeline |
+| `GET` | `/match/{id}/goal-replays` | Open-play goal sequence coordinates |
 | `GET` | `/match/{id}/ppda` | PPDA by half |
 | `GET` | `/match/{id}/player/{name}/heatmap` | Player touch heatmap |
 | `GET` | `/match/{id}/player/{name}/pass-sonar` | Player pass sonar |

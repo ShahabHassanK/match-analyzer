@@ -116,3 +116,7 @@ export function fetchSetPieces(matchId) {
 export function fetchAverageShape(matchId) {
   return request(`/match/${matchId}/average-shape`);
 }
+
+export function fetchGoalBuildUps(matchId) {
+  return request(`/match/${matchId}/goal-build-ups`);
+}

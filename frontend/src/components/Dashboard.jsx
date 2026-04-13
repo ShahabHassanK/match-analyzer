@@ -21,6 +21,7 @@ import MomentumView from './views/MomentumView';
 import PlayerHeatmapView from './views/PlayerHeatmapView';
 import PlayerPassSonarView from './views/PlayerPassSonarView';
 import PlayerActionsView from './views/PlayerActionsView';
+import GoalReplaysView from './views/GoalReplaysView';
 
 import {
   fetchSummary,
@@ -34,6 +35,7 @@ import {
   fetchZoneEntries,
   fetchSetPieces,
   fetchAverageShape,
+  fetchGoalBuildUps,
   fetchPlayerHeatmap,
   fetchPlayerPassSonar,
 } from '../services/api';
@@ -65,7 +67,7 @@ export default function Dashboard({ matchId, onBack }) {
   const [xi, setXI] = useState(null);
 
   // View state
-  const [activeView, setActiveView] = useState('shots');
+  const [activeView, setActiveView] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
   // Lazy-loaded view data cache
@@ -77,7 +79,7 @@ export default function Dashboard({ matchId, onBack }) {
     setError(null);
     setViewData({});
     setSelectedPlayer(null);
-    setActiveView('momentum');
+    setActiveView('');
 
     Promise.all([fetchSummary(matchId), fetchStartingXI(matchId)])
       .then(([sum, startXI]) => {
@@ -103,6 +105,7 @@ export default function Dashboard({ matchId, onBack }) {
       zoneEntries: () => fetchZoneEntries(matchId),
       setPieces: () => fetchSetPieces(matchId),
       averageShape: () => fetchAverageShape(matchId),
+      goalReplays: () => fetchGoalBuildUps(matchId),
       playerHeatmap: () => selectedPlayer ? fetchPlayerHeatmap(matchId, selectedPlayer) : null,
       playerPassSonar: () => selectedPlayer ? fetchPlayerPassSonar(matchId, selectedPlayer) : null,
     };
@@ -149,12 +152,17 @@ export default function Dashboard({ matchId, onBack }) {
     if (activeView === 'defensive') return <DefensiveActionsView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
     if (activeView === 'setPieces') return <SetPiecesView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
     if (activeView === 'averageShape') return <AverageShapeView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
+    if (activeView === 'goalReplays') return <GoalReplaysView data={data} />;
     
     if (activeView === 'playerHeatmap') return <PlayerHeatmapView data={data} />;
     if (activeView === 'playerPassSonar') return <PlayerPassSonarView data={data} />;
     if (activeView === 'playerActions') return <PlayerActionsView data={data} />;
 
-    return null;
+    return (
+      <div className="empty-view-placeholder" style={{ padding: '4rem 2rem', textAlign: 'center', color: '#64748b', fontSize: '1.1rem', backgroundColor: '#0f172a', borderRadius: '8px', border: '1px dashed #334155' }}>
+        <p>Please select a visualization from the dropdown menu above to begin analysis.</p>
+      </div>
+    );
   };
 
   if (loading) {
@@ -194,23 +202,42 @@ export default function Dashboard({ matchId, onBack }) {
         </div>
       </div>
 
-      {/* Advanced Metrics Terminal */}
-      <AdvancedMetrics matchId={matchId} homeTeam={homeTeam} awayTeam={awayTeam} />
+      {/* Advanced Metrics Terminal & Goal Replays Buttons */}
+      <div className="dash-actions" style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+        <AdvancedMetrics matchId={matchId} homeTeam={homeTeam} awayTeam={awayTeam} />
+        
+        <div className="am-toggle-wrap" style={{ marginTop: '32px' }}>
+          <button 
+            className="am-toggle-btn" 
+            onClick={() => setActiveView(activeView === 'goalReplays' ? '' : 'goalReplays')}
+            style={{ 
+              background: activeView === 'goalReplays' ? '#1e293b' : undefined,
+              borderColor: activeView === 'goalReplays' ? '#60a5fa' : undefined,
+              color: activeView === 'goalReplays' ? '#ffffff' : undefined,
+            }}
+          >
+            {activeView === 'goalReplays' ? 'Close 2D Goal Replay ✖' : '2D Goal Replay ⚽'}
+          </button>
+        </div>
+      </div>
 
       {/* Single View Panel */}
       <section className="view-panel">
-        <div className="view-selector-header">
-          <span className="view-selector-label">Visualisation:</span>
-          <select 
-            className="view-dropdown" 
-            value={activeView} 
-            onChange={(e) => setActiveView(e.target.value)}
-          >
-            {TEAM_VIEWS.map(v => (
-              <option key={v.id} value={v.id}>{v.label}</option>
-            ))}
-          </select>
-        </div>
+        {activeView !== 'goalReplays' && (
+          <div className="view-selector-header">
+            <span className="view-selector-label">Visualisation:</span>
+            <select 
+              className="view-dropdown" 
+              value={activeView} 
+              onChange={(e) => setActiveView(e.target.value)}
+            >
+              <option value="" disabled>Select visualization...</option>
+              {TEAM_VIEWS.map(v => (
+                <option key={v.id} value={v.id}>{v.label}</option>
+              ))}
+            </select>
+          </div>
+        )}
         <div className="view-content">
           {renderView()}
         </div>

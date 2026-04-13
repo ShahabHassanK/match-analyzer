@@ -344,3 +344,10 @@ async def api_set_pieces(match_id: str):
     """Set piece analysis: corners, free kicks, deliveries, first contact, outcomes."""
     csv_path = _resolve_csv(match_id)
     return {"status": "ok", "data": match_analyzer.get_set_piece_analysis(csv_path)}
+
+
+@app.get("/api/match/{match_id}/goal-build-ups")
+async def api_goal_build_ups(match_id: str):
+    """Event sequences leading up to goals for 2D animated replay."""
+    csv_path = _resolve_csv(match_id)
+    return {"status": "ok", "data": match_analyzer.get_goal_build_ups(csv_path)}

@@ -1347,3 +1347,91 @@ def _build_delivery(df: pd.DataFrame, row: pd.Series, idx: int, team: str) -> di
         "shotOutcome": shot_outcome,
         "outcome": row.get("outcomeType", ""),
     }
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  18. GOAL BUILD UPS (2D ANIMATION)
+# ══════════════════════════════════════════════════════════════════════════════
+
+def get_goal_build_ups(csv_path: str) -> dict:
+    """
+    Extracts pass/carry sequences leading to a Goal for 2D animation.
+    Traces backwards from the goal event as long as the ball remains with the scoring team.
+    """
+    df = _load_match(csv_path)
+    home, away = _team_names(df)
+
+    goal_events = df[df["type"] == "Goal"]
+    sequences = []
+    
+    for _, goal in goal_events.iterrows():
+        goal_idx = goal.name
+        team = goal["team"]
+        if goal.get("is_own_goal"):
+            team = home if team == away else away
+        
+        prev_events = df[(df.index <= goal_idx) & (df["period"] == goal["period"])].copy()
+        sequence_items = []
+        last_time = float(goal["minute"]) * 60 + float(goal.get("second", 0) or 0)
+        
+        for i in range(len(prev_events) - 1, -1, -1):
+            evt = prev_events.iloc[i]
+            
+            # Opponent actions that signify a change of possession
+            if evt["team"] != team:
+                if evt["type"] in {"Pass", "Carry", "TakeOn", "BallRecovery", "Clearance", "GoalKick"}:
+                    if evt["outcomeType"] == "Successful":
+                        break
+                    
+            if evt["team"] == team:
+                curr_time = float(evt["minute"]) * 60 + float(evt.get("second", 0) or 0)
+                if last_time - curr_time > 20: 
+                    # 20 second gap without an event -> break sequence
+                    break
+                
+                # Only collect actionable on-ball events with coordinates
+                if pd.notna(evt["x"]) and pd.notna(evt["y"]) and evt["type"] not in {"Start", "End", "SubstitutionOff", "SubstitutionOn"}:
+                    if evt["type"] == "Goal":
+                        ey_val = evt.get("goal_mouth_y")
+                        ex = 100
+                        ey = float(ey_val) if pd.notna(ey_val) else 50
+                    else:
+                        ex = evt.get("endX", evt["x"])
+                        ey = evt.get("endY", evt["y"])
+                    
+                    if pd.isna(ex): ex = evt["x"]
+                    if pd.isna(ey): ey = evt["y"]
+
+                    sequence_items.append({
+                        "id": int(evt.name),
+                        "type": evt["type"],
+                        "minute": int(evt["match_minute"]),
+                        "second": int(evt.get("second", 0) or 0),
+                        "player": str(evt.get("playerName", "Unknown")),
+                        "team": str(evt["team"]),
+                        "period": str(evt.get("period", "FirstHalf")),
+                        "x": round(float(evt["x"]), 1),
+                        "y": round(float(evt["y"]), 1),
+                        "endX": round(float(ex), 1),
+                        "endY": round(float(ey), 1),
+                        "outcome": evt.get("outcomeType", ""),
+                        "isGoal": evt["type"] == "Goal",
+                    })
+                    last_time = curr_time
+
+        # Built backwards, so reverse for playback
+        sequence_items.reverse()
+        if len(sequence_items) > 0:
+            sequences.append({
+                "goalId": int(goal_idx),
+                "team": team,
+                "scorer": goal.get("playerName", "Unknown"),
+                "minute": int(goal["match_minute"]),
+                "events": sequence_items
+            })
+            
+    return {
+        "homeTeam": home,
+        "awayTeam": away,
+        "sequences": sequences
+    }
