@@ -17,6 +17,7 @@ import DefensiveActionsView from './views/DefensiveActionsView';
 import ZoneEntriesView from './views/ZoneEntriesView';
 import SetPiecesView from './views/SetPiecesView';
 import AverageShapeView from './views/AverageShapeView';
+import MomentumView from './views/MomentumView';
 import PlayerHeatmapView from './views/PlayerHeatmapView';
 import PlayerPassSonarView from './views/PlayerPassSonarView';
 import PlayerActionsView from './views/PlayerActionsView';
@@ -39,6 +40,7 @@ import {
 
 
 const TEAM_VIEWS = [
+  { id: 'momentum',    label: 'Match Momentum' },
   { id: 'shots',       label: 'Shot Map' },
   { id: 'passNetwork', label: 'Pass Network' },
   { id: 'defensive',   label: 'Defensive Actions' },
@@ -75,7 +77,7 @@ export default function Dashboard({ matchId, onBack }) {
     setError(null);
     setViewData({});
     setSelectedPlayer(null);
-    setActiveView('shots');
+    setActiveView('momentum');
 
     Promise.all([fetchSummary(matchId), fetchStartingXI(matchId)])
       .then(([sum, startXI]) => {
@@ -135,30 +137,25 @@ export default function Dashboard({ matchId, onBack }) {
   const awayTeam = summary?.awayTeam || '';
 
   // ── Render view ─────────────────────────────────────────────────────────
-  function renderView() {
-    const data = viewData[activeView];
+  const renderView = () => {
+    const cacheKey = selectedPlayer ? `${activeView}_${selectedPlayer}` : activeView;
+    const data = viewData[cacheKey];
+    if (!data) return <div className="view-loading">Loading specific view data…</div>;
+
+    if (activeView === 'momentum') return <MomentumView data={data} />;
+    if (activeView === 'shots') return <ShotMapView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
+    if (activeView === 'passNetwork') return <PassNetworkView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
+    if (activeView === 'zoneEntries') return <ZoneEntriesView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
+    if (activeView === 'defensive') return <DefensiveActionsView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
+    if (activeView === 'setPieces') return <SetPiecesView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
+    if (activeView === 'averageShape') return <AverageShapeView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
     
-    if (activeView === 'shots') {
-      return <ShotMapView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
-    }
-    if (activeView === 'passNetwork') {
-      return <PassNetworkView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
-    }
-    if (activeView === 'zoneEntries') {
-      return <ZoneEntriesView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
-    }
-    if (activeView === 'defensive') {
-      return <DefensiveActionsView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
-    }
-    if (activeView === 'setPieces') {
-      return <SetPiecesView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
-    }
-    if (activeView === 'averageShape') {
-      return <AverageShapeView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
-    }
-    
-    return <div className="dash-error container"><p>Visualisation not built yet.</p></div>;
-  }
+    if (activeView === 'playerHeatmap') return <PlayerHeatmapView data={data} />;
+    if (activeView === 'playerPassSonar') return <PlayerPassSonarView data={data} />;
+    if (activeView === 'playerActions') return <PlayerActionsView data={data} />;
+
+    return null;
+  };
 
   if (loading) {
     return (

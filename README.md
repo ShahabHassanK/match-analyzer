@@ -322,6 +322,22 @@ Comprehensive mapping of Corner and Free Kick deliveries, tracking player execut
 
 ---
 
+### Momentum
+
+Displays a rolling action-density timeline, visualizing the flow of the match over 90 minutes. Highlights periods of sustained dominance or momentum shifts based on passing and attacking actions.
+
+![Momentum](viz/momentum.png)
+
+---
+
+### Pressing
+
+Visualizes the defensive pressure applied by each team. Calculates Passes Per Defensive Action (PPDA) by half, showing where and when teams apply a high press or drop into a lower block.
+
+![Pressing](viz/pressing.PNG)
+
+---
+
 ## Stage 5 — Advanced Metrics Terminal
 
 **Component:** `frontend/src/components/AdvancedMetrics.jsx`

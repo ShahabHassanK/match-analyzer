@@ -614,13 +614,18 @@ def get_xT_momentum(csv_path: str, window: int = 5) -> dict:
     home, away = _team_names(df)
 
     # Build per-minute xT sums for each team
-    max_min = int(df["match_minute"].max()) + 1
+    max_min = int(df["minute"].max()) + 1
     home_xT = np.zeros(max_min)
     away_xT = np.zeros(max_min)
+    player_xt = defaultdict(float)
 
     for _, row in df[df["xT"].notna()].iterrows():
-        m = int(row["match_minute"])
+        m = int(row["minute"])
         xt = float(row["xT"])
+        player_name = str(row["playerName"])
+        if pd.notna(row["playerName"]):
+            player_xt[player_name] += xt
+        
         if row["team"] == home:
             home_xT[m] += xt
         elif row["team"] == away:
@@ -644,10 +649,18 @@ def get_xT_momentum(csv_path: str, window: int = 5) -> dict:
             "difference": round(float(smoothed[m]), 4),
         })
 
+    # Top 3 threat creators
+    top_players = [
+        {"name": p, "xT": round(v, 2)} 
+        for p, v in sorted(player_xt.items(), key=lambda x: x[1], reverse=True) 
+        if v > 0
+    ][:3]
+
     return {
         "homeTeam": home, "awayTeam": away,
         "windowSize": window,
         "timeline": timeline,
+        "topPlayers": top_players,
     }
 
 
