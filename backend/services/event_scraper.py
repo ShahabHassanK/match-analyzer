@@ -573,7 +573,7 @@ def scrape_whoscored(url, app_dir=r'E:\Personal Projects\xG-app\backend', enrich
                     continue
 
         if match_data is None:
-            raise ValueError("Could not find event data in the page source.")
+            raise ValueError("Match center data is not available for this match (e.g., FA Cup matches without detailed tracking).")
 
         match_date = None
         if isinstance(match_data, dict):
@@ -589,7 +589,7 @@ def scrape_whoscored(url, app_dir=r'E:\Personal Projects\xG-app\backend', enrich
 
         events = match_data.get("events") or match_data.get("matchEvents") or []
         if not events:
-            raise ValueError("Event list is empty - data structure may have changed.")
+            raise ValueError("Match center data is not available for this match (Empty events list).")
 
         player_dict = match_data.get("playerIdNameDictionary", {})
         home_team = ""

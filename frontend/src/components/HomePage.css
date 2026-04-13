@@ -274,11 +274,50 @@
   font-weight: 600;
 }
 
-/* ── Existing Matches ── */
+/* ── Existing / Saved Matches ── */
+.saved-matches-card {
+  margin-top: var(--space-xl);
+}
+
+.saved-matches-card .card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.match-count {
+  font-size: 11px;
+  font-weight: 800;
+  background: var(--color-primary);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+}
+
 .existing-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Custom scrollbar */
+.existing-list::-webkit-scrollbar {
+  width: 6px;
+}
+.existing-list::-webkit-scrollbar-track {
+  background: var(--bg-badge);
+  border-radius: 4px;
+}
+.existing-list::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: 4px;
+}
+.existing-list::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 .existing-row {
@@ -286,7 +325,7 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 14px var(--space-md);
+  padding: 12px var(--space-md);
   text-align: left;
   border-radius: var(--radius-md);
   font-size: var(--font-size-base);
@@ -294,6 +333,7 @@
   background: var(--bg-card);
   border: 1px solid var(--border-light);
   transition: all var(--transition-fast);
+  gap: 8px;
 }
 
 .existing-row:hover:not(:disabled) {
@@ -306,6 +346,16 @@
 .existing-name {
   font-weight: 600;
   letter-spacing: -0.01em;
+  flex: 1;
+  min-width: 0;
+}
+
+.existing-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .existing-arrow {
@@ -314,6 +364,7 @@
   opacity: 0;
   transform: translateX(-10px);
   transition: all var(--transition-fast);
+  flex-shrink: 0;
 }
 
 .existing-row:hover:not(:disabled) .existing-arrow {

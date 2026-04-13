@@ -177,16 +177,47 @@ async def api_scrape(req: ScrapeRequest):
 
 @app.get("/api/matches")
 async def list_matches():
-    """List all available match CSVs in the data directory."""
-    csvs = sorted(DATA_DIR.glob("whoscored_*.csv"))
+    """List all available match CSVs in the data directory, most recent first."""
+    import csv
+    from datetime import datetime
+
+    csvs = list(DATA_DIR.glob("whoscored_*.csv"))
     matches = []
     for f in csvs:
-        # Extract a clean display name from the filename
         stem = f.stem.replace("whoscored_", "").replace("_all_events", "")
+        display_name = stem.replace("_", " ")
+
+        # Extract homeTeam / awayTeam from the CSV header row
+        home_team = ""
+        away_team = ""
+        try:
+            with open(f, "r", encoding="utf-8") as fh:
+                reader = csv.DictReader(fh)
+                first_row = next(reader, None)
+                if first_row:
+                    home_team = first_row.get("homeTeam", "")
+                    away_team = first_row.get("awayTeam", "")
+                    if home_team and away_team:
+                        display_name = f"{home_team} vs {away_team}"
+        except Exception:
+            pass
+
+        # File modification time as "scraped date"
+        mtime = f.stat().st_mtime
+        scraped_date = datetime.fromtimestamp(mtime).strftime("%b %d, %Y %H:%M")
+
         matches.append({
             "id": f.stem,
-            "displayName": stem.replace("_", " "),
+            "displayName": display_name,
+            "homeTeam": home_team,
+            "awayTeam": away_team,
+            "scrapedAt": scraped_date,
+            "scrapedTimestamp": mtime,
         })
+
+    # Sort by scraped timestamp, newest first
+    matches.sort(key=lambda m: m["scrapedTimestamp"], reverse=True)
+
     return {"status": "ok", "count": len(matches), "matches": matches}
 
 

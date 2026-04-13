@@ -27,9 +27,9 @@ export default function HomePage({ onMatchSelected }) {
   // URL paste state
   const [pasteUrl, setPasteUrl] = useState('');
 
-  // Scraping state
   const [scraping, setScraping] = useState(false);
   const [scrapingStatus, setScrapingStatus] = useState('');
+  const [scrapingError, setScrapingError] = useState(false); // New state to track if we're in an error state
 
   // Previously scraped matches
   const [existingMatches, setExistingMatches] = useState([]);
@@ -84,10 +84,6 @@ export default function HomePage({ onMatchSelected }) {
     setShowAutocomplete(false);
     // Optionally trigger search immediately
     setTimeout(() => {
-      // Triggering form submission or handleSearch directly requires teamQuery to be updated, 
-      // but state is async, so we pass it directly if we were calling the API, 
-      // here we just let the user click search or we can do it directly.
-      // Doing it directly is better UX:
       setTeamQuery(team);
       searchSpecificTeam(team);
     }, 0);
@@ -114,6 +110,7 @@ export default function HomePage({ onMatchSelected }) {
   // ── Scrape ──────────────────────────────────────────────────────────────
   const doScrape = async (url) => {
     setScraping(true);
+    setScrapingError(false);
     setScrapingStatus('Connecting to WhoScored…');
 
     try {
@@ -122,13 +119,16 @@ export default function HomePage({ onMatchSelected }) {
       setScrapingStatus(`✅ Scraped ${result.event_count} events. Loading dashboard…`);
 
       setTimeout(() => {
+        setScraping(false); // Clear overlay before navigating
         onMatchSelected(result.match_id);
       }, 800);
     } catch (err) {
+      setScrapingError(true);
       setScrapingStatus(`❌ ${err.message}`);
-      setScraping(false);
+      // Do not setScraping(false) here, so the user can read the error message.
     }
   };
+
 
   const handleScrapeFromUrl = (e) => {
     e.preventDefault();
@@ -224,7 +224,7 @@ export default function HomePage({ onMatchSelected }) {
           )}
         </section>
 
-        {/* ── Right: URL Paste + Existing Matches ───────────────────────── */}
+        {/* ── Right: URL Paste ────────────────────────────────────────── */}
         <div className="home-right">
           <section className="home-card">
             <h3 className="card-title">
@@ -244,35 +244,50 @@ export default function HomePage({ onMatchSelected }) {
               </button>
             </form>
           </section>
-
-          {existingMatches.length > 0 && (
-            <section className="home-card">
-              <h3 className="card-title">
-                Saved Database Matches
-              </h3>
-              <div className="existing-list">
-                {existingMatches.slice(0, 5).map(m => (
-                  <button
-                    key={m.id}
-                    className="existing-row"
-                    onClick={() => onMatchSelected(m.id)}
-                    disabled={scraping}
-                  >
-                    <span className="existing-name">{m.displayName}</span>
-                    <span className="existing-arrow">→</span>
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
         </div>
       </div>
+
+      {/* ── Full-width: Saved Matches ─────────────────────────────────── */}
+      {existingMatches.length > 0 && (
+        <section className="home-card saved-matches-card">
+          <h3 className="card-title">
+            Saved Database Matches
+            <span className="match-count">{existingMatches.length}</span>
+          </h3>
+          <div className="existing-list">
+            {existingMatches.map(m => (
+              <button
+                key={m.id}
+                className="existing-row"
+                onClick={() => onMatchSelected(m.id)}
+                disabled={scraping}
+              >
+                <span className="existing-name">{m.displayName}</span>
+                <span className="existing-meta">{m.scrapedAt || ''}</span>
+                <span className="existing-arrow">→</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
       {scraping && (
         <div className="scraping-overlay">
           <div className="scraping-modal">
-            <div className="scraping-spinner" />
+            {!scrapingError && <div className="scraping-spinner" />}
             <p className="scraping-text">{scrapingStatus}</p>
+            {scrapingError && (
+              <button 
+                className="btn btn-primary" 
+                style={{ marginTop: '16px' }}
+                onClick={() => {
+                  setScraping(false);
+                  setScrapingError(false);
+                }}
+              >
+                Close
+              </button>
+            )}
           </div>
         </div>
       )}
