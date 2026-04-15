@@ -339,7 +339,7 @@ All tabs feature a **Top Penetrators** sidebar ranking each player by successful
 #### Through Balls & Box Touches
 <p align="center">
   <img src="viz/throughball.PNG" width="48%">
-  <img src="viz/boxtouches.PNG" width="48%">
+  <img src="viz/boxtouches.png" width="48%">
 </p>
 
 ---

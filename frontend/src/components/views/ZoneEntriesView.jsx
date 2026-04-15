@@ -71,7 +71,7 @@ export default function ZoneEntriesView({ data, homeTeam, awayTeam }) {
   const summaryLabel = isThroughBallTab
     ? `Successful (${totalCount > 0 ? Math.round((successfulVectors.length / totalCount) * 100) : 0}% success)`
     : config.isTouch
-    ? 'Total Box Touches'
+    ? 'Successful Box Touches'
     : entryFilter !== 'all'
     ? `${entryFilter === 'pass' ? 'Passes' : 'Carries'} (${displayCount} of ${totalCount})`
     : 'Successful Entries';
@@ -140,7 +140,7 @@ export default function ZoneEntriesView({ data, homeTeam, awayTeam }) {
         {/* Sidebar: Top Players + Legend */}
         <div className="zv-top-players">
           <h4 className="zv-top-title">
-            {config.isTouch ? 'Top Box Touchers' : isThroughBallTab ? 'Top (Through Balls)' : `Top Penetrators (${config.label})`}
+            {config.isTouch ? 'Top Box Touchers (Successful)' : isThroughBallTab ? 'Top (Through Balls)' : `Top Penetrators (${config.label})`}
           </h4>
           {topPlayers.length > 0 ? (
             <ul className="zv-player-list">

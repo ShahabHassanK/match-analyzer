@@ -825,12 +825,18 @@ def get_zone_entries(csv_path: str) -> dict:
         ]
         box_entries = pd.concat([box_pass_entries, box_carry_entries]).sort_values(["period", "match_minute"])
 
-        # Touches in the Opposition Box: all on-ball events where is_touch_in_box == True
+        # Touches in the Opposition Box: successful on-ball events where is_touch_in_box == True
+        # Goals and shots are included regardless of outcome label (SavedShot etc. are successful attacks)
+        SHOT_TYPES_SET = {"SavedShot", "MissedShots", "Goal", "ShotOnPost", "BlockedShot", "AttemptSaved", "Attempt"}
         t_all_team = df[df["team"] == team]
         box_touches_df = t_all_team[
             (t_all_team["is_touch_in_box"].fillna(False).astype(bool))
             & pd.notna(t_all_team["x"])
             & pd.notna(t_all_team["y"])
+            & (
+                (t_all_team["outcomeType"] == "Successful")
+                | (t_all_team["type"].isin(SHOT_TYPES_SET))  # shots always count
+            )
         ]
 
         def _to_vectors(subset):
