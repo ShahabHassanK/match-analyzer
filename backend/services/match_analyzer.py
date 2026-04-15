@@ -808,6 +808,31 @@ def get_zone_entries(csv_path: str) -> dict:
             & (t_all["endX"] > t_all["x"])  # progressive filter
         ]
 
+        # Box Entries: passes/carries ending inside the penalty box from outside it (open play)
+        open_play_all_teams = df[
+            (~df["is_corner"].fillna(False).astype(bool))
+            & (~df["is_freekick"].fillna(False).astype(bool))
+            & (df["type"] != "GoalKick")
+            & (df["team"] == team)
+        ]
+        box_pass_entries = open_play_all_teams[
+            (open_play_all_teams["is_box_entry_pass"].fillna(False).astype(bool))
+            & (open_play_all_teams["outcomeType"] == "Successful")
+        ]
+        box_carry_entries = open_play_all_teams[
+            (open_play_all_teams["is_box_entry_carry"].fillna(False).astype(bool))
+            & (open_play_all_teams["type"] == "Carry")
+        ]
+        box_entries = pd.concat([box_pass_entries, box_carry_entries]).sort_values(["period", "match_minute"])
+
+        # Touches in the Opposition Box: all on-ball events where is_touch_in_box == True
+        t_all_team = df[df["team"] == team]
+        box_touches_df = t_all_team[
+            (t_all_team["is_touch_in_box"].fillna(False).astype(bool))
+            & pd.notna(t_all_team["x"])
+            & pd.notna(t_all_team["y"])
+        ]
+
         def _to_vectors(subset):
             vectors = []
             for _, row in subset.iterrows():
@@ -824,13 +849,33 @@ def get_zone_entries(csv_path: str) -> dict:
                     })
             return vectors
 
+        def _to_touches(subset):
+            touches = []
+            for _, row in subset.iterrows():
+                try:
+                    touches.append({
+                        "player": str(row.get("playerName", "Unknown")),
+                        "type": str(row.get("type", "")),
+                        "minute": int(row["match_minute"]),
+                        "outcome": str(row.get("outcomeType", "")),
+                        "x": round(float(row["x"]), 1),
+                        "y": round(float(row["y"]), 1),
+                    })
+                except (TypeError, ValueError):
+                    continue
+            return touches
+
         return {
             "finalThirdCount": len(ft_entries),
             "zone14Count": len(z14_entries),
             "throughBallCount": len(tb_entries),
+            "boxCount": len(box_entries),
+            "boxTouchesCount": len(box_touches_df),
             "finalThirdEntries": _to_vectors(ft_entries),
             "zone14Entries": _to_vectors(z14_entries),
             "throughBallEntries": _to_vectors(tb_entries),
+            "boxEntries": _to_vectors(box_entries),
+            "boxTouches": _to_touches(box_touches_df),
         }
 
     return {

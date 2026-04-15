@@ -46,7 +46,7 @@ const TEAM_VIEWS = [
   { id: 'shots',       label: 'Shot Map' },
   { id: 'passNetwork', label: 'Pass Network' },
   { id: 'defensive',   label: 'Defensive Actions' },
-  { id: 'zoneEntries', label: 'Zone Entries' },
+  { id: 'zoneEntries', label: 'Creative Play' },
   { id: 'setPieces',   label: 'Set Pieces' },
   { id: 'averageShape',label: 'Tactical Shape' },
 ];

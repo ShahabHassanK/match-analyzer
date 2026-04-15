@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   ZONE ENTRIES VIEW
+   CREATIVE PLAY VIEW (Zone Entries)
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .zone-view {
@@ -12,7 +12,7 @@
 .zv-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: var(--space-md);
   padding-bottom: var(--space-sm);
@@ -32,15 +32,18 @@
   border-radius: var(--radius-md);
   padding: 4px;
   width: fit-content;
+  flex-wrap: wrap;
+  gap: 2px;
 }
 
 .zv-btn {
-  padding: 6px 16px;
+  padding: 6px 14px;
   font-size: 12px;
   font-weight: 700;
   border-radius: var(--radius-sm);
   color: var(--text-secondary);
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .zv-btn:hover { color: var(--text-primary); }
@@ -54,7 +57,42 @@
 .zv-btn.active.home { border-bottom: 2px solid var(--color-home); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 .zv-btn.active.away { border-bottom: 2px solid var(--color-away); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 
+/* ── Pass/Carry Filter Group ── */
+.zv-filter-group {
+  background: transparent;
+  border: 1px solid var(--border-light);
+  gap: 0;
+}
+
+.zv-filter-btn {
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+}
+
+.zv-filter-btn.active.home {
+  background: color-mix(in srgb, var(--color-home) 15%, transparent);
+  color: var(--color-home);
+  border-bottom: 2px solid var(--color-home);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.zv-filter-btn.active.away {
+  background: color-mix(in srgb, var(--color-away) 15%, transparent);
+  color: var(--color-away);
+  border-bottom: 2px solid var(--color-away);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
 /* ── Summary Stats ── */
+.zv-summary-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .zv-summary {
   display: flex;
   flex-direction: column;
@@ -76,14 +114,15 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   margin-top: 4px;
+  text-align: right;
 }
 
 /* ── Pitch Components ── */
 .zv-pitch-container {
   position: relative;
-  background: #111827; 
+  background: #111827;
   border-radius: var(--radius-lg);
-  padding: 2%; 
+  padding: 2%;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
@@ -102,14 +141,14 @@
 
 /* ── Target Area Shading ── */
 .zv-target-zone {
-  transition: all 0.5s ease;
+  transition: all 0.4s ease;
 }
 
 .zv-target-zone.active {
-  fill: rgba(255, 255, 255, 0.06); /* subtle illumination */
+  fill: rgba(255, 255, 255, 0.06);
   stroke: rgba(255,255,255, 0.3);
   stroke-width: 0.5;
-  stroke-dasharray: 2, 2; /* Dashed boundary for the glowing zone */
+  stroke-dasharray: 2, 2;
 }
 
 /* ── Entry Vectors ── */
@@ -122,12 +161,51 @@
 .zv-vector.away { stroke: var(--color-away); }
 
 .zv-vector:hover {
-  stroke-width: 0.8 !important; /* Emphasize heavily on hover */
+  stroke-width: 0.8 !important;
   filter: drop-shadow(0 0 3px rgba(255,255,255,0.8));
 }
 
 .zv-arrowhead.home { fill: var(--color-home); }
 .zv-arrowhead.away { fill: var(--color-away); }
+
+/* ── Touch Dots ── */
+.zv-touch-dot {
+  cursor: pointer;
+  transition: r 0.15s ease, filter 0.15s ease;
+  opacity: 0.8;
+}
+
+.zv-touch-dot.home {
+  fill: var(--color-home);
+  stroke: rgba(255,255,255,0.25);
+  stroke-width: 0.2;
+}
+
+.zv-touch-dot.away {
+  fill: var(--color-away);
+  stroke: rgba(255,255,255,0.25);
+  stroke-width: 0.2;
+}
+
+/* Shots in box get a highlighted ring */
+.zv-touch-dot.shot {
+  stroke: rgba(255, 200, 80, 0.6);
+  stroke-width: 0.4;
+  opacity: 0.9;
+}
+
+/* Goals get a bright glow */
+.zv-touch-dot.goal {
+  fill: #10b981;
+  stroke: #10b981;
+  stroke-width: 0.5;
+  opacity: 1;
+}
+
+.zv-touch-dot:hover {
+  opacity: 1;
+  filter: drop-shadow(0 0 2.5px rgba(255,255,255,0.9));
+}
 
 /* ── Tooltip ── */
 .zv-tooltip {
@@ -142,7 +220,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-width: 140px;
+  min-width: 150px;
 }
 
 .zv-tt-player {
@@ -167,18 +245,13 @@
 .zv-tt-dim { color: var(--text-muted); font-size: 10px; margin-top: 2px; }
 
 /* ── Top Players Panel & Legend ── */
-.zv-summary-container {
-  display: flex;
-  justify-content: flex-end;
-}
-
 .zv-top-players {
-  background: var(--bg-card); /* clean white/light pane */
+  background: var(--bg-card);
   border: 1px solid var(--border-light);
   padding: 16px;
   border-radius: var(--radius-md);
-  min-width: 200px;
-  max-width: 250px;
+  min-width: 190px;
+  max-width: 240px;
   flex-shrink: 0;
   height: fit-content;
   box-shadow: 0 4px 6px rgba(0,0,0,0.05);
@@ -243,13 +316,14 @@
   color: var(--text-muted);
 }
 
+/* ── Legend ── */
 .zv-legend {
   border-top: 1px solid var(--border-light);
-  padding-top: 16px;
-  margin-top: 12px;
+  padding-top: 14px;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .zv-legend-item {
@@ -275,3 +349,12 @@
 .zv-legend-line.dashed { background-color: transparent; }
 .zv-legend-line.dashed.home { border-top: 2px dashed var(--color-home); }
 .zv-legend-line.dashed.away { border-top: 2px dashed var(--color-away); }
+
+.zv-legend-dot {
+  width: 10px;
+  height: 10px;
+  min-width: 10px;
+  border-radius: 50%;
+}
+.zv-legend-dot.home { background: var(--color-home); }
+.zv-legend-dot.away { background: var(--color-away); }

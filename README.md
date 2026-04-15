@@ -1,6 +1,6 @@
 # Match Analyzer
 
-> A professional-grade football match analysis platform that searches for any fixture, scrapes live event data from WhoScored, and renders a fully interactive tactical dashboard — shot maps, pass networks, zone entry flows, defensive heatmaps, and a Bloomberg-style advanced metrics terminal.
+> A professional-grade football match analysis platform that searches for any fixture, scrapes live event data from WhoScored, and renders a fully interactive tactical dashboard — shot maps, pass networks, creative play analysis, defensive heatmaps, interactive 2D goal replays, and a Bloomberg-style advanced metrics terminal.
 
 ---
 
@@ -232,7 +232,7 @@ away_score = raw_away_goals - og_away_committed + og_home_committed
 | `get_shot_map` | `/match/{id}/shots` | All shots with coordinates, xG proxy, outcome |
 | `get_pass_network` | `/match/{id}/pass-network` | Average positions + weighted pass links between players |
 | `get_defensive_actions` | `/match/{id}/defensive-actions` | Tackles, interceptions, clearances per zone |
-| `get_zone_entries` | `/match/{id}/zone-entries` | Box entries and final-third entries by method |
+| `get_zone_entries` | `/match/{id}/zone-entries` | Final third entries, Zone 14 entries, box entries, through balls, and touches in the opposition box — all segmented by pass/carry |
 | `get_territory_heatmap` | `/match/{id}/territory` | Touch density grid per team |
 | `get_player_heatmap` | `/match/{id}/player/{name}/heatmap` | Individual player touch map |
 | `get_player_pass_sonar` | `/match/{id}/player/{name}/pass-sonar` | Directional pass distribution |
@@ -301,25 +301,46 @@ Tackles, interceptions, and clearances plotted on a full pitch, grouped by pitch
 
 ---
 
-### Zone Entries, Final Third & Through Balls
+### Creative Play
 
-Tracks how each team penetrates into dangerous areas exclusively from open-play:
-- **Box Entries** — open-play carries or passes that end inside the penalty area
-- **Final Third Entries** — open-play actions that move the ball into the attacking third
-- **Through Balls** — progressive, line-breaking passes highlighting successful (solid) vs unsuccessful (dashed red) passes.
+A unified tactical intelligence panel that analyses how each team penetrates and operates in dangerous areas — exclusively from open play. Organised into five interactive sub-tabs with a **Pass / Carry filter toggle** available on all entry views:
 
-Visualized as zone-split bar charts with entry method breakdowns (pass vs carry) and top penetrator scoreboards.
+| Sub-tab | Description |
+|---|---|
+| **Final Third Entries** | Open-play passes and carries that cross the final third boundary (x ≥ 67), shown as directional vectors with arrowheads |
+| **Zone 14 Entries** | Entries into the central Zone 14 pocket (x: 72–83, y: 30–70) — the highest-value zone for shot creation |
+| **Box Entries** | Open-play passes and carries whose endpoint falls inside the attacking penalty area (x > 83, y: 21–79) |
+| **Through Balls** | Progressive line-breaking passes, with successful attempts shown as solid lines and failed attempts as dashed red lines |
+| **Box Touches** | Scatter-plot of every on-ball touch inside the opposition penalty box. Goals glow green, shots are highlighted in amber, all other touches rendered as team-coloured dots |
 
-![Through Balls](viz/throughball.PNG)
-![Zone Entries](viz/finalthird.png)
+All tabs feature a **Top Penetrators** sidebar ranking each player by successful entries or touches. Hovering any vector or dot reveals a tooltip with player name, action type, match minute, and outcome.
 
----
+#### Final Third Entries
+<p align="center">
+  <img src="viz/finalthird-all.PNG" width="32%">
+  <img src="viz/finalthird-passes.PNG" width="32%">
+  <img src="viz/finalthird-carries.PNG" width="32%">
+</p>
 
-### Zone 14 & Half-Space Entries
+#### Zone 14 Entries
+<p align="center">
+  <img src="viz/zone14-all.PNG" width="32%">
+  <img src="viz/zone14-passes.PNG" width="32%">
+  <img src="viz/zone14-carries.PNG" width="32%">
+</p>
 
-Highlights entries into **Zone 14** (the central pocket just outside the penalty box, between the two penalty arcs), one of the most analytically significant zones in modern football.
+#### Box Entries
+<p align="center">
+  <img src="viz/boxentries-all.PNG" width="32%">
+  <img src="viz/boxentries-passes.PNG" width="32%">
+  <img src="viz/boxentries-carries.PNG" width="32%">
+</p>
 
-![Zone 14](viz/zone14.png)
+#### Through Balls & Box Touches
+<p align="center">
+  <img src="viz/throughball.PNG" width="48%">
+  <img src="viz/boxtouches.PNG" width="48%">
+</p>
 
 ---
 
@@ -468,7 +489,7 @@ All endpoints are prefixed with `/api`.
 | `GET` | `/match/{id}/shots` | Shot map data |
 | `GET` | `/match/{id}/pass-network` | Pass network graph |
 | `GET` | `/match/{id}/defensive-actions` | Defensive action heatmap |
-| `GET` | `/match/{id}/zone-entries` | Zone entry and through ball statistics |
+| `GET` | `/match/{id}/zone-entries` | Creative Play data — final third entries, Zone 14 entries, box entries, through balls, and opposition box touches |
 | `GET` | `/match/{id}/set-pieces` | Set piece analysis (Corners & Free Kicks) |
 | `GET` | `/match/{id}/average-shape` | Average tactical in-possession shape |
 | `GET` | `/match/{id}/territory` | Touch density heatmap |
