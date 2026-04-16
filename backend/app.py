@@ -19,6 +19,7 @@ from typing import Optional
 from services.discovery_service import search_fixtures
 from services.event_scraper import scrape_whoscored
 from services import match_analyzer
+from services.gradient_scoring import get_gradient_scoring
 
 
 # ─── App Setup ────────────────────────────────────────────────────────────────
@@ -337,6 +338,13 @@ async def api_advanced_metrics(match_id: str):
     """Advanced tactical metrics panel: pressing, progression, possession, aggression, creativity, duels, shape."""
     csv_path = _resolve_csv(match_id)
     return {"status": "ok", "data": match_analyzer.get_advanced_metrics(csv_path)}
+
+
+@app.get("/api/match/{match_id}/gradient-scoring")
+async def api_gradient_scoring(match_id: str):
+    """Exhaustive 42-variable index scoring breakdown out of 100."""
+    csv_path = _resolve_csv(match_id)
+    return {"status": "ok", "data": get_gradient_scoring(csv_path)}
 
 
 @app.get("/api/match/{match_id}/set-pieces")

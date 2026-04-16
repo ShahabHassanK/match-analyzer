@@ -11,6 +11,7 @@ import './Dashboard.css';
 import MatchFacts from './MatchFacts';
 import StartingXI from './StartingXI';
 import AdvancedMetrics from './AdvancedMetrics';
+import GradientScoring from './GradientScoring';
 import ShotMapView from './views/ShotMapView';
 import PassNetworkView from './views/PassNetworkView';
 import DefensiveActionsView from './views/DefensiveActionsView';
@@ -203,7 +204,10 @@ export default function Dashboard({ matchId, onBack }) {
       </div>
 
       {/* Advanced Metrics Terminal & Goal Replays Buttons */}
-      <div className="dash-actions" style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+      <div className="dash-actions" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', alignItems: 'flex-start' }}>
+        <div className="am-toggle-wrap" style={{ marginTop: '32px' }}>
+          <GradientScoring matchId={matchId} homeTeam={homeTeam} awayTeam={awayTeam} />
+        </div>
         <AdvancedMetrics matchId={matchId} homeTeam={homeTeam} awayTeam={awayTeam} />
         
         <div className="am-toggle-wrap" style={{ marginTop: '32px' }}>
@@ -216,7 +220,7 @@ export default function Dashboard({ matchId, onBack }) {
               color: activeView === 'goalReplays' ? '#ffffff' : undefined,
             }}
           >
-            {activeView === 'goalReplays' ? 'Close 2D Goal Replay ✖' : '2D Goal Replay ⚽'}
+            {activeView === 'goalReplays' ? 'Close 2D Goal Replay' : '2D Goal Replay'}
           </button>
         </div>
       </div>

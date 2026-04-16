@@ -42,8 +42,8 @@
   --color-off-target: #ef4444;
 
   /* Teams */
-  --color-home: #e63946;
-  --color-away: #f4a261;
+  --color-home: #38bdf8;  /* Vibrant Blue for Home Team */
+  --color-away: #f87171;  /* Vibrant Red for Away Team */
 
   /* Borders & Shadows */
   --border-light: #e5e7eb;

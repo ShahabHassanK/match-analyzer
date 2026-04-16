@@ -57,6 +57,10 @@ export function fetchStartingXI(matchId) {
   return request(`/match/${matchId}/starting-xi`);
 }
 
+export function fetchGradientScoring(matchId) {
+  return request(`/match/${matchId}/gradient-scoring`);
+}
+
 export function fetchShots(matchId) {
   return request(`/match/${matchId}/shots`);
 }
