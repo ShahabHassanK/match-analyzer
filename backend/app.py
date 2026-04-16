@@ -260,12 +260,6 @@ async def api_ppda(match_id: str):
     return {"status": "ok", "data": match_analyzer.get_ppda(csv_path)}
 
 
-@app.get("/api/match/{match_id}/territory")
-async def api_territory(match_id: str):
-    """Territory heatmap grid for both teams."""
-    csv_path = _resolve_csv(match_id)
-    return {"status": "ok", "data": match_analyzer.get_territory_heatmap(csv_path)}
-
 
 @app.get("/api/match/{match_id}/average-shape")
 async def api_average_shape(match_id: str):
@@ -298,15 +292,6 @@ async def api_zone_entries(match_id: str):
     return {"status": "ok", "data": match_analyzer.get_zone_entries(csv_path)}
 
 
-@app.get("/api/match/{match_id}/passing-combos")
-async def api_passing_combos(
-    match_id: str,
-    top_n: int = Query(10, description="Number of top combinations to return"),
-):
-    """Top passing combinations for each team."""
-    csv_path = _resolve_csv(match_id)
-    return {"status": "ok", "data": match_analyzer.get_passing_combinations(csv_path, top_n=top_n)}
-
 
 @app.get("/api/match/{match_id}/player/{player_name}/actions")
 async def api_player_actions(
@@ -319,18 +304,6 @@ async def api_player_actions(
     return {"status": "ok", "data": match_analyzer.get_player_actions(csv_path, player_name, action_type)}
 
 
-@app.get("/api/match/{match_id}/player/{player_name}/heatmap")
-async def api_player_heatmap(match_id: str, player_name: str):
-    """Touch density heatmap for a specific player."""
-    csv_path = _resolve_csv(match_id)
-    return {"status": "ok", "data": match_analyzer.get_player_heatmap(csv_path, player_name)}
-
-
-@app.get("/api/match/{match_id}/player/{player_name}/pass-sonar")
-async def api_player_pass_sonar(match_id: str, player_name: str):
-    """Pass direction sonar for a specific player."""
-    csv_path = _resolve_csv(match_id)
-    return {"status": "ok", "data": match_analyzer.get_player_pass_sonar(csv_path, player_name)}
 
 
 @app.get("/api/match/{match_id}/advanced-metrics")

@@ -74,9 +74,6 @@ export function fetchPPDA(matchId) {
   return request(`/match/${matchId}/ppda`);
 }
 
-export function fetchTerritory(matchId) {
-  return request(`/match/${matchId}/territory`);
-}
 
 export function fetchMomentum(matchId, window = 5) {
   return request(`/match/${matchId}/momentum?window=${window}`);
@@ -90,9 +87,6 @@ export function fetchZoneEntries(matchId) {
   return request(`/match/${matchId}/zone-entries`);
 }
 
-export function fetchPassingCombos(matchId, topN = 10) {
-  return request(`/match/${matchId}/passing-combos?top_n=${topN}`);
-}
 
 /* ── Player-Level Analysis ───────────────────────────────────────────────── */
 
@@ -101,13 +95,7 @@ export function fetchPlayerActions(matchId, playerName, actionType) {
   return request(`/match/${matchId}/player/${encodeURIComponent(playerName)}/actions${query}`);
 }
 
-export function fetchPlayerHeatmap(matchId, playerName) {
-  return request(`/match/${matchId}/player/${encodeURIComponent(playerName)}/heatmap`);
-}
 
-export function fetchPlayerPassSonar(matchId, playerName) {
-  return request(`/match/${matchId}/player/${encodeURIComponent(playerName)}/pass-sonar`);
-}
 
 export function fetchAdvancedMetrics(matchId) {
   return request(`/match/${matchId}/advanced-metrics`);

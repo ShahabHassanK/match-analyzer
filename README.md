@@ -234,13 +234,13 @@ away_score = raw_away_goals - og_away_committed + og_home_committed
 | `get_pass_network` | `/match/{id}/pass-network` | Average positions + weighted pass links between players |
 | `get_defensive_actions` | `/match/{id}/defensive-actions` | Tackles, interceptions, clearances per zone |
 | `get_zone_entries` | `/match/{id}/zone-entries` | Final third entries, Zone 14 entries, box entries, through balls, and touches in the opposition box — all segmented by pass/carry |
-| `get_territory_heatmap` | `/match/{id}/territory` | Touch density grid per team |
-| `get_player_heatmap` | `/match/{id}/player/{name}/heatmap` | Individual player touch map |
-| `get_player_pass_sonar` | `/match/{id}/player/{name}/pass-sonar` | Directional pass distribution |
+| `get_average_shape` | `/match/{id}/average-shape` | Average in-possession tactical shape per player |
 | `get_ppda` | `/match/{id}/ppda` | Pressing intensity per half |
-| `get_momentum` | `/match/{id}/momentum` | Rolling action-density timeline |
-| `get_goal_build_ups` | `/match/{id}/goal-replays` | Full event sequences for all open-play goals |
-| `get_advanced_metrics` | `/match/{id}/advanced-metrics` | Full tactical metrics terminal |
+| `get_xT_momentum` | `/match/{id}/momentum` | Rolling Expected Threat (xT) timeline showing match dominance |
+| `get_goal_build_ups` | `/match/{id}/goal-build-ups` | Full event sequences for all open-play goals |
+| `get_set_piece_analysis` | `/match/{id}/set-pieces` | Corner and free-kick delivery & outcome analysis |
+| `get_advanced_metrics` | `/match/{id}/advanced-metrics` | Comprehensive tactical metrics panel |
+| `get_gradient_scoring` | `/match/{id}/gradient-scoring` | 42-variable index scoring breakdown out of 100 |
 
 ---
 
@@ -543,13 +543,11 @@ All endpoints are prefixed with `/api`.
 | `GET` | `/match/{id}/zone-entries` | Creative Play data — final third entries, Zone 14 entries, box entries, through balls, and opposition box touches |
 | `GET` | `/match/{id}/set-pieces` | Set piece analysis (Corners & Free Kicks) |
 | `GET` | `/match/{id}/average-shape` | Average tactical in-possession shape |
-| `GET` | `/match/{id}/territory` | Touch density heatmap |
 | `GET` | `/match/{id}/momentum` | Match momentum timeline |
-| `GET` | `/match/{id}/goal-replays` | Open-play goal sequence coordinates |
+| `GET` | `/match/{id}/goal-build-ups` | Open-play goal sequence coordinates |
 | `GET` | `/match/{id}/ppda` | PPDA by half |
-| `GET` | `/match/{id}/player/{name}/heatmap` | Player touch heatmap |
-| `GET` | `/match/{id}/player/{name}/pass-sonar` | Player pass sonar |
 | `GET` | `/match/{id}/advanced-metrics` | Full advanced metrics terminal |
+| `GET` | `/match/{id}/gradient-scoring` | Gradient performance matrix score |
 
 Interactive API docs available at `http://localhost:8000/docs` (Swagger UI).
 

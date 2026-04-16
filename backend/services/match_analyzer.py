@@ -477,38 +477,6 @@ def get_ppda(csv_path: str) -> dict:
     }
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-#  6. TERRITORY HEATMAP
-# ══════════════════════════════════════════════════════════════════════════════
-
-def get_territory_heatmap(csv_path: str, grid_size: int = 12) -> dict:
-    """
-    Touch density heatmap per team.
-    Returns a grid_size x grid_size matrix of touch counts for each team,
-    normalised to 0-1 for colour-mapping on the frontend.
-    """
-    df = _load_match(csv_path)
-    home, away = _team_names(df)
-
-    def _heatmap(team: str) -> list[list[float]]:
-        touches = df[(df["team"] == team) & df["x"].notna() & df["y"].notna()]
-        grid = np.zeros((grid_size, grid_size))
-
-        for _, row in touches.iterrows():
-            xi = min(int(row["x"] / 100 * grid_size), grid_size - 1)
-            yi = min(int(row["y"] / 100 * grid_size), grid_size - 1)
-            grid[yi][xi] += 1
-
-        # Return raw touch counts for comparative analysis
-        return grid.astype(int).tolist()
-
-    return {
-        "homeTeam": home, "awayTeam": away,
-        "gridSize": grid_size,
-        "home": _heatmap(home),
-        "away": _heatmap(away),
-    }
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  6B. AVERAGE IN-POSSESSION SHAPE
@@ -892,51 +860,6 @@ def get_zone_entries(csv_path: str) -> dict:
     }
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-#  10. PASSING COMBINATIONS MATRIX
-# ══════════════════════════════════════════════════════════════════════════════
-
-def get_passing_combinations(csv_path: str, top_n: int = 10) -> dict:
-    """
-    Top N most frequent passer→receiver combinations for each team.
-    Used to render a combination heatmap matrix on the frontend.
-    """
-    df = _load_match(csv_path)
-    home, away = _team_names(df)
-
-    def _combos(team: str) -> list[dict]:
-        team_events = df[df["team"] == team].copy()
-        passes = team_events[
-            (team_events["type"] == "Pass") & (team_events["outcomeType"] == "Successful")
-        ]
-
-        team_indices = team_events.index.tolist()
-        edge_counts = defaultdict(int)
-
-        for idx in passes.index:
-            passer = df.loc[idx, "playerName"]
-            if pd.isna(passer):
-                continue
-
-            pos_in_team = team_indices.index(idx) if idx in team_indices else -1
-            if pos_in_team >= 0 and pos_in_team + 1 < len(team_indices):
-                next_idx = team_indices[pos_in_team + 1]
-                receiver = df.loc[next_idx, "playerName"]
-                if pd.notna(receiver) and receiver != passer:
-                    edge_counts[(passer, receiver)] += 1
-
-        sorted_combos = sorted(edge_counts.items(), key=lambda x: -x[1])[:top_n]
-        return [
-            {"from": p, "to": r, "count": c}
-            for (p, r), c in sorted_combos
-        ]
-
-    return {
-        "homeTeam": home, "awayTeam": away,
-        "home": _combos(home),
-        "away": _combos(away),
-    }
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  11. PLAYER ACTIONS (Individual Filtering)
@@ -1001,97 +924,6 @@ def get_player_actions(csv_path: str, player_name: str, action_type: str | None 
     }
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-#  12. PLAYER HEATMAP
-# ══════════════════════════════════════════════════════════════════════════════
-
-def get_player_heatmap(csv_path: str, player_name: str, grid_size: int = 12) -> dict:
-    """
-    Touch density heatmap for a single player.
-    Returns a normalised grid_size x grid_size matrix.
-    """
-    df = _load_match(csv_path)
-
-    touches = df[
-        (df["playerName"] == player_name)
-        & df["x"].notna()
-        & df["y"].notna()
-    ]
-
-    grid = np.zeros((grid_size, grid_size))
-    for _, row in touches.iterrows():
-        xi = min(int(row["x"] / 100 * grid_size), grid_size - 1)
-        yi = min(int(row["y"] / 100 * grid_size), grid_size - 1)
-        grid[yi][xi] += 1
-
-    max_val = grid.max()
-    if max_val > 0:
-        grid = grid / max_val
-
-    team = touches["team"].mode().iloc[0] if not touches.empty else "Unknown"
-
-    return {
-        "player": player_name,
-        "team": team,
-        "gridSize": grid_size,
-        "totalTouches": int(len(touches)),
-        "heatmap": np.round(grid, 3).tolist(),
-    }
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-#  13. PLAYER PASS SONAR
-# ══════════════════════════════════════════════════════════════════════════════
-
-def get_player_pass_sonar(csv_path: str, player_name: str, n_bins: int = 16) -> dict:
-    """
-    Pass direction sonar: groups all of a player's successful passes into
-    angular bins (0-360°) and counts volume + average distance per bin.
-    0° = straight forward (toward opponent goal), 90° = right, 180° = backward.
-    """
-    df = _load_match(csv_path)
-
-    passes = df[
-        (df["playerName"] == player_name)
-        & (df["type"] == "Pass")
-        & (df["outcomeType"] == "Successful")
-        & df["x"].notna() & df["y"].notna()
-        & df["endX"].notna() & df["endY"].notna()
-    ]
-
-    bin_size = 360 / n_bins
-    bins = [{"angle": i * bin_size, "count": 0, "avgDistance": 0, "totalDist": 0} for i in range(n_bins)]
-
-    for _, row in passes.iterrows():
-        dx = row["endX"] - row["x"]
-        dy = row["endY"] - row["y"]
-
-        # Angle: 0° = forward (positive x), clockwise
-        angle_rad = math.atan2(dy, dx)
-        angle_deg = math.degrees(angle_rad)
-        # Normalise to 0-360
-        angle_deg = angle_deg % 360
-
-        distance = math.sqrt(dx**2 + dy**2)
-        bin_idx = int(angle_deg / bin_size) % n_bins
-
-        bins[bin_idx]["count"] += 1
-        bins[bin_idx]["totalDist"] += distance
-
-    # Calculate averages
-    for b in bins:
-        if b["count"] > 0:
-            b["avgDistance"] = round(b["totalDist"] / b["count"], 1)
-        del b["totalDist"]
-
-    team = passes["team"].mode().iloc[0] if not passes.empty else "Unknown"
-
-    return {
-        "player": player_name,
-        "team": team,
-        "totalPasses": int(len(passes)),
-        "bins": bins,
-    }
 
 
 # ══════════════════════════════════════════════════════════════════════════════

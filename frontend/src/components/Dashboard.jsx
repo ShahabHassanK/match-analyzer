@@ -19,8 +19,6 @@ import ZoneEntriesView from './views/ZoneEntriesView';
 import SetPiecesView from './views/SetPiecesView';
 import AverageShapeView from './views/AverageShapeView';
 import MomentumView from './views/MomentumView';
-import PlayerHeatmapView from './views/PlayerHeatmapView';
-import PlayerPassSonarView from './views/PlayerPassSonarView';
 import PlayerActionsView from './views/PlayerActionsView';
 import GoalReplaysView from './views/GoalReplaysView';
 
@@ -30,15 +28,12 @@ import {
   fetchShots,
   fetchPassNetwork,
   fetchPPDA,
-  fetchTerritory,
   fetchMomentum,
   fetchDefensiveActions,
   fetchZoneEntries,
   fetchSetPieces,
   fetchAverageShape,
   fetchGoalBuildUps,
-  fetchPlayerHeatmap,
-  fetchPlayerPassSonar,
 } from '../services/api';
 
 
@@ -53,9 +48,7 @@ const TEAM_VIEWS = [
 ];
 
 const PLAYER_VIEWS = [
-  { id: 'playerHeatmap',   label: 'Heatmap',    icon: '🔥' },
   { id: 'playerActions',   label: 'Actions',    icon: '👟' },
-  { id: 'playerPassSonar', label: 'Pass Sonar', icon: '📡' },
 ];
 
 
@@ -101,14 +94,11 @@ export default function Dashboard({ matchId, onBack }) {
       shots: () => fetchShots(matchId),
       passNetwork: () => fetchPassNetwork(matchId),
       momentum: () => fetchMomentum(matchId),
-      territory: () => fetchTerritory(matchId),
       defensive: () => fetchDefensiveActions(matchId),
       zoneEntries: () => fetchZoneEntries(matchId),
       setPieces: () => fetchSetPieces(matchId),
       averageShape: () => fetchAverageShape(matchId),
       goalReplays: () => fetchGoalBuildUps(matchId),
-      playerHeatmap: () => selectedPlayer ? fetchPlayerHeatmap(matchId, selectedPlayer) : null,
-      playerPassSonar: () => selectedPlayer ? fetchPlayerPassSonar(matchId, selectedPlayer) : null,
     };
 
     const fetcher = fetchers[activeView];
@@ -126,7 +116,7 @@ export default function Dashboard({ matchId, onBack }) {
     if (player) {
       setSelectedPlayer(player);
       if (!PLAYER_VIEWS.find(v => v.id === activeView)) {
-        setActiveView('playerHeatmap');
+        setActiveView('playerActions');
       }
     } else {
       setSelectedPlayer(null);
@@ -155,8 +145,6 @@ export default function Dashboard({ matchId, onBack }) {
     if (activeView === 'averageShape') return <AverageShapeView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
     if (activeView === 'goalReplays') return <GoalReplaysView data={data} />;
     
-    if (activeView === 'playerHeatmap') return <PlayerHeatmapView data={data} />;
-    if (activeView === 'playerPassSonar') return <PlayerPassSonarView data={data} />;
     if (activeView === 'playerActions') return <PlayerActionsView data={data} />;
 
     return (
