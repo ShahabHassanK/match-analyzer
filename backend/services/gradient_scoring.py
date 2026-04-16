@@ -128,9 +128,9 @@ def get_gradient_scoring(csv_path: str) -> dict:
         blocks = len(t[t["type"] == "BlockedShot"])
 
         def_score = (
-            max(0, 20 - (opp_prog * 0.2)) + max(0, 10 - (opp_box_ent * 0.4)) +
-            max(0, 10 - (opp_box_shots * 0.8)) + max(0, 10 - (opp_sot_pct * 0.2)) + min(opp_dist/25, 1) * 10 +
-            max(0, 10 - (ppda - 8) * 0.8) + min(high_recov/12, 1) * 10 +
+            max(0, 20 - (opp_prog * 0.12)) + max(0, 10 - (opp_box_ent * 0.25)) +
+            max(0, 10 - (opp_box_shots * 0.5)) + max(0, 10 - (opp_sot_pct * 0.15)) + min(opp_dist/25, 1) * 10 +
+            max(0, 10 - (ppda - 10) * 0.5) + min(high_recov/12, 1) * 10 +
             min(def_duels/70, 1) * 5 + min(aerial_pct/65, 1) * 5 +
             min(tackles/25, 1) * 3 + min(inters/15, 1) * 3 + min(clears/30, 1) * 2 + min(blocks/10, 1) * 2
         )
@@ -184,10 +184,10 @@ def get_gradient_scoring(csv_path: str) -> dict:
             "defense": {
                 "score": float(round(min(def_score, 100), 1)),
                 "breakdown": {
-                    "Suppression": float(round(max(0, 20-opp_prog*0.2) + max(0, 10-opp_box_ent*0.4), 1)),
-                    "Shot Denial": float(round(max(0, 10-opp_box_shots*0.8) + min(opp_dist/25, 1)*10, 1)),
-                    "Pressing": float(round(max(0, 10-(ppda-8)*0.8) + min(high_recov/12, 1)*10, 1)),
-                    "Solidity": float(round(min(def_duels/70, 1)*5 + min(aerial_pct/65, 1)*5 + min(tackles/25, 1)*3, 1))
+                    "Suppression": float(round(max(0, 20-opp_prog*0.12) + max(0, 10-opp_box_ent*0.25), 1)),
+                    "Shot Denial": float(round(max(0, 10-opp_box_shots*0.5) + max(0, 10-opp_sot_pct*0.15) + min(opp_dist/25, 1)*10, 1)),
+                    "Pressing": float(round(max(0, 10-(ppda-10)*0.5) + min(high_recov/12, 1)*10, 1)),
+                    "Solidity": float(round(min(def_duels/70, 1)*5 + min(aerial_pct/65, 1)*5 + min(tackles/25, 1)*3 + min(inters/15, 1)*3 + min(clears/30, 1)*2 + min(blocks/10, 1)*2, 1))
                 },
                 "stats": {
                     "PPDA": float(round(ppda, 2)),
