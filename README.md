@@ -1,6 +1,6 @@
 # Match Analyzer
 
-> A professional-grade football match analysis platform that searches for any fixture, scrapes live event data from WhoScored, and renders a fully interactive tactical dashboard — shot maps, pass networks, creative play analysis, defensive heatmaps, interactive 2D goal replays, and a Bloomberg-style advanced metrics terminal.
+> A high-fidelity tactical intelligence platform that automates the discovery, extraction, and analysis of football match events. By transforming raw event streams from WhoScored into professional-grade analytics, the system delivers deep insights through a 42-metric Gradient Performance Matrix, interactive 2D motion replays for goal build-up, and advanced visualizations for passing networks, territorial penetration, and defensive structures.
 
 ---
 
@@ -13,10 +13,12 @@
 5. [Stage 2 — WhoScored Event Scraping](#stage-2--whoscored-event-scraping)
 6. [Stage 3 — Match Analysis Engine](#stage-3--match-analysis-engine)
 7. [Stage 4 — Visualizations](#stage-4--visualizations)
-8. [Stage 5 — Advanced Metrics Terminal](#stage-5--advanced-metrics-terminal)
-9. [Getting Started](#getting-started)
-10. [API Reference](#api-reference)
-11. [Configuration](#configuration)
+    - [2D Match Replays](#2d-goal-replays)
+8. [Stage 5 — Advanced Performance Analytics](#stage-5--advanced-performance-analytics)
+9. [Stage 6 — Gradient Performance Matrix](#stage-6--gradient-performance-matrix)
+10. [Getting Started](#getting-started)
+11. [API Reference](#api-reference)
+12. [Configuration](#configuration)
 
 ---
 
@@ -28,7 +30,6 @@ Match Analyzer is a full-stack football analytics application that takes a team 
 - **Scraping** — Extract raw event data (passes, shots, tackles, etc.) from WhoScored's MatchCentre
 - **Analysis** — Compute tactical statistics and render interactive visualizations in a React dashboard
 
-The platform covers top-flight clubs across the Premier League, La Liga, Serie A, Bundesliga, and Ligue 1.
 
 ---
 
@@ -48,7 +49,7 @@ The platform covers top-flight clubs across the Premier League, La Liga, Serie A
 ## Project Structure
 
 ```
-xG-app/
+match-analyzer/
 ├── backend/
 │   ├── app.py                  # FastAPI application & route definitions
 │   ├── run.py                  # Uvicorn entrypoint
@@ -74,7 +75,7 @@ xG-app/
 │   │   │   ├── Dashboard.jsx      # Main match analysis layout
 │   │   │   ├── MatchFacts.jsx     # Scoreline & key stats panel
 │   │   │   ├── StartingXI.jsx     # Formation & player list
-│   │   │   ├── AdvancedMetrics.jsx  # Bloomberg terminal panel
+│   │   │   ├── AdvancedMetrics.jsx  # Advanced performance analytics panel
 │   │   │   └── views/
 │   │   │       ├── ShotMapView.jsx
 │   │   │       ├── PassNetworkView.jsx
@@ -98,7 +99,7 @@ The discovery stage finds recent matches for any club without requiring the user
 
 **Step 1 — Team Resolution**
 
-The user types a team name (e.g. `"Arsenal"`, `"Man Utd"`, `"Barcelona"`). The system resolves this to a WhoScored internal team ID and URL slug using a curated lookup table (`KNOWN_TEAMS`) covering 100+ clubs across Europe's top 5 leagues.
+The user types a team name (e.g. `"Arsenal"`, `"Man Utd"`, `"Barcelona"`). The system resolves this to a WhoScored internal team ID and URL slug using a curated lookup table (`KNOWN_TEAMS`) covering 100+ clubs.
 
 Matching is fuzzy — it first tries an exact lookup, then falls back to substring matching, so `"Bayern"` resolves to Bayern Munich just as well as `"Bayern Munich"` does.
 
@@ -369,11 +370,11 @@ Visualizes the defensive pressure applied by each team. Calculates Passes Per De
 
 ---
 
-## Stage 5 — Advanced Metrics Terminal
+## Stage 5 — Advanced Performance Analytics
 
 **Component:** `frontend/src/components/AdvancedMetrics.jsx`
 
-A Bloomberg-terminal-style data panel hidden behind a **"View Advanced Metrics"** button. It computes 13 advanced metrics across 7 tactical categories, displayed side-by-side with stock-exchange-style **▲ green** (better) and **▼ red** (worse) indicators.
+A comprehensive data panel that provides a side-by-side comparison of 13 advanced metrics across 7 tactical categories. The view utilizes intuitive indicators (**▲ green** for better, **▼ red** for worse) to highlight performance deltas between the two teams.
 
 ![Advanced Metrics](viz/advancedmetrics.PNG)
 
@@ -419,6 +420,56 @@ A Bloomberg-terminal-style data panel hidden behind a **"View Advanced Metrics"*
 | Metric | Formula |
 |---|---|
 | **Field Tilt** | Team's final-third passes ÷ total final-third passes by both teams × 100%. *A 60%+ tilt indicates sustained territorial dominance* |
+  
+---
+
+## Stage 6 — Gradient Performance Matrix
+
+**Component:** `frontend/src/components/GradientScoring.jsx`
+
+The platform’s standout analytical feature: a 42-metric mathematical model that generates a "Tactical Fingerprint" for each team. Unlike standard box scores, the Gradient Scoring engine prioritizes territorial dominance (Field Tilt) and pressing efficiency (PPDA) over raw shot volume.
+
+### Visual Breakdown
+
+The matrix provides a high-level summary followed by deep-dive tactical pillars for **Attacking**, **Possession**, and **Defense**.
+
+#### Performance Matrix
+![Gradient Scores](viz/gradientscore.PNG)
+
+#### Tactical Pillars Breakdown
+<p align="center">
+  <img src="viz/attackingscore.PNG" width="32%">
+  <img src="viz/possessionscore.PNG" width="32%">
+  <img src="viz/defensivescore.PNG" width="32%">
+</p>
+
+### Mathematical Model Breakdown
+
+Each category is powered by 14 distinct performance vectors (42 total), weighted to accurately reflect match dominance.
+
+#### 1. Attacking Score (14 Metrics)
+Measures the efficiency and threat of a team's offensive phases.
+*   **Threat Generation**: Weighted Progressive Passes, Progressive Carries, and Corner volume.
+*   **Shooting Efficiency**: Shots from inside the box, Shot-on-Target %, Average Shot Distance (normalized for proximity), and pure goals.
+*   **Penetration**: Successful entries into the Penalty Box and Zone 14, and touches in the opposition box.
+*   **Creativity**: Key Pass volume (shot assists) and Crossing Accuracy.
+
+#### 2. Possession Score (14 Metrics)
+Measures match control and build-up quality.
+*   **Control**: Overall Possession % and **Field Tilt** (final-third pass share).
+*   **Efficiency**: General Pass Accuracy, Forward Pass Accuracy, and Own-Half security.
+*   **Sequence**: Average Pass Sequence length and Build-up Ratio (own-third usage).
+*   **Field Dominance**: Absolute volume and accuracy of passes within the final third.
+
+#### 3. Defensive Score (14 Metrics)
+Measures the ability to suppress opponent play and maintain solidity.
+*   **Suppression**: Ability to limit opponent progressive actions and box entries.
+*   **Shot Denial**: Ability to limit opponent box shots and force high average shot distances.
+*   **Pressing Intensity**: **PPDA** (Passes Per Defensive Action) and Final-Third ball recoveries.
+*   **Solidity**: Dribble defense (Tackles vs Take-ons), Aerial Win %, and high-volume defensive actions (Blocks, Interceptions, Clearances).
+
+### Directional Play Correction
+The engine automatically detects each team's attacking direction (x > 50 vs x < 50) by analyzing their average shot coordinates. This ensures that "Box Entries" and "Field Tilt" are accurately calculated even when WhoScored data varies its coordinate normalization between matches.
 
 ---
 
