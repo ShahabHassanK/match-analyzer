@@ -5,8 +5,8 @@
   height: 100%;
   
   /* Force High Contrast for Momentum Visualization */
-  --mo-color-home: #e63946;  /* Red */
-  --mo-color-away: #1E88E5;  /* Deep Blue */
+  --mo-color-home: #38bdf8;  /* Blue - matches global --color-home */
+  --mo-color-away: #f87171;  /* Red - matches global --color-away */
 }
 
 .mo-main-panel {
