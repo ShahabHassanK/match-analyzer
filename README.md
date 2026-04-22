@@ -475,11 +475,12 @@ Measures the efficiency and threat of a team's offensive phases.
 
 **Formula:**
 ```python
+# big_chances uses WhoScored's is_big_chance flag (fallback: box_shots * 0.4)
 att_score = (
-    min(prog_p/60, 1) * 7 + min(prog_c/45, 1) * 3 + min(xg_est/2.5, 1) * 5 + min(corners/10, 1) * 5 +
-    min(box_shots/12, 1) * 10 + min(sot_pct/45, 1) * 5 + max(0, min((28-avg_dist)/15, 1)) * 5 + min(goals/3, 1) * 10 +
-    min(box_entries/25, 1) * 15 + min(z14_entries/20, 1) * 5 + min(box_touches/35, 1) * 10 + min(deep_progs/20, 1) * 5 +
-    min(kp/14, 1) * 10 + min(cross_acc/35, 1) * 5
+    min(prog_p/60, 1) * 7 + min(prog_c/45, 1) * 3 + min(big_chances/8, 1) * 5 + min(corners/10, 1) * 5 +
+    min(box_shots/12, 1) * 10 + min(sot_pct/40, 1) * 5 + max(0, min((28-avg_dist)/15, 1)) * 5 + min(goals/3, 1) * 10 +
+    min(box_entries/22, 1) * 15 + min(z14_entries/16, 1) * 5 + min(box_touches/28, 1) * 10 + min(deep_progs/12, 1) * 5 +
+    min(kp/12, 1) * 10 + min(cross_acc/30, 1) * 5
 )
 ```
 
@@ -493,11 +494,11 @@ Measures match control and build-up quality.
 **Formula:**
 ```python
 poss_score = (
-    min(poss_pct/70, 1) * 15 + min(field_tilt/75, 1) * 15 + min(pass_vol/700, 1) * 5 +
+    min(poss_pct/63, 1) * 15 + min(field_tilt/63, 1) * 15 + min(pass_vol/500, 1) * 5 +
     min(pass_acc/90, 1) * 10 + min(fwd_acc/80, 1) * 5 + min(own_acc/95, 1) * 5 +
-    min(avg_seq/6, 1) * 10 + min(buildup/40, 1) * 10 +
-    min(len(ft_passes)/250, 1) * 10 + min(ft_acc/80, 1) * 5 +
-    min(recovs/60, 1) * 5 + max(0, 5 - (losses/40))
+    min(avg_seq/5, 1) * 10 + min(buildup/40, 1) * 10 +
+    min(len(ft_passes)/165, 1) * 10 + min(ft_acc/80, 1) * 5 +
+    min(recovs/60, 1) * 5 + max(0, 5 - (losses/60))
 )
 ```
 
@@ -511,8 +512,8 @@ Measures the ability to suppress opponent play and maintain solidity.
 **Formula:**
 ```python
 def_score = (
-    max(0, 20 * (1 - max(0, opp_prog - 30) / 120)) + max(0, 10 - max(0, opp_box_ent - 5) * 0.2) +
-    max(0, 10 - (opp_box_shots * 0.5)) + max(0, 10 - (opp_sot_pct * 0.15)) + min(opp_dist/25, 1) * 10 +
+    max(0, 20 - opp_prog * 0.09) + max(0, 10 - max(0, opp_box_ent - 5) * 0.18) +
+    max(0, 10 - max(0, opp_box_shots - 2) * 0.38) + max(0, 10 - (opp_sot_pct * 0.15)) + min(opp_dist/25, 1) * 10 +
     max(0, 10 - max(0, ppda - 8) * 0.35) + min(high_recov/12, 1) * 10 +
     min(def_duels/70, 1) * 5 + min(aerial_pct/65, 1) * 5 +
     min(tackles/25, 1) * 3 + min(inters/15, 1) * 3 + min(clears/30, 1) * 2 + min(blocks/10, 1) * 2
@@ -522,15 +523,17 @@ def_score = (
 ### Directional Play Correction
 The engine automatically detects each team's attacking direction (x > 50 vs x < 50) by analyzing their average shot coordinates. This ensures that "Box Entries" and "Field Tilt" are accurately calculated even when WhoScored data varies its coordinate normalization between matches.
 
-### Recent Calibration Improvements
+### Calibration Notes
 
-The scoring system was recalibrated to produce realistic score distributions:
+Thresholds are set to realistic elite-level performance so that strong displays score 75–90 and average displays score 50–70 — scores reflect genuine tactical quality rather than raw event volume.
 
-**Attacking:** Thresholds lowered to typical elite-level performance (e.g., 12 box shots instead of 15, 25 box entries instead of 35). A strong attacking display now scores 60–80 instead of 40–60.
+**Attacking:** `big_chances` (WhoScored's `is_big_chance` flag) replaces the naive `shots × 0.12` xG estimate. Thresholds calibrated to elite-but-achievable values — e.g. 22 box entries, 12 key passes, 30% crossing accuracy.
 
-**Defense:** The suppression formula was restructured from a harsh subtraction model to a baseline-relative formula: `20 * (1 - max(0, opp_prog - 30) / 120)`. This gives credit for keeping opponent progressive actions below 150 (realistic) rather than below zero (impossible). Defensive displays now accurately score 55–75 instead of 20–40.
+**Defense:** Suppression uses a simple proportional formula `max(0, 20 - opp_prog × 0.09)` that reaches zero only at 222 progressive actions (extreme), giving realistic credit across the normal 60–120 range. Box shots allowed uses a grace-zone model (`opp_box_shots - 2`) before deductions begin.
 
-**Breakdown accuracy:** All 14 attacking metrics now appear in the breakdown categories (goals, shot distance, xG estimate, deep progressions were previously missing), and breakdown values are properly clamped to prevent negative or inflated sub-scores.
+**Passing:** Five caps lowered to match real match distributions — possession (70% → 63%), field tilt (75% → 63%), pass volume (700 → 500), avg sequence (6 → 5), final-third pass volume (250 → 165). Loss penalty normalised over 60 events instead of 40.
+
+**Breakdown accuracy:** All 14 attacking metrics appear in breakdown sub-categories, all values are properly clamped (no negatives, no over-cap inflation).
 
 ---
 
