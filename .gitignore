@@ -6,6 +6,7 @@ backend/**/*.pyc
 backend/**/*.pyo
 backend/.env
 backend/.env.*
+!backend/.env.example
 
 # Data files (scraped CSVs — do not commit real match data)
 backend/data/*.csv
@@ -13,7 +14,11 @@ backend/data/*.json
 
 # Logs and temp
 backend/*.log
-backend/implementation_plan.md
+
+# Planning and generated markdown docs (preserve README.md files)
+*.md
+!README.md
+!**/README.md
 
 # Frontend
 frontend/node_modules/

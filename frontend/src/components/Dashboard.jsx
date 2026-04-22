@@ -21,6 +21,7 @@ import AverageShapeView from './views/AverageShapeView';
 import MomentumView from './views/MomentumView';
 import PlayerActionsView from './views/PlayerActionsView';
 import GoalReplaysView from './views/GoalReplaysView';
+import AIGuide from './AIGuide';
 
 import {
   fetchSummary,
@@ -193,16 +194,19 @@ export default function Dashboard({ matchId, onBack }) {
 
       {/* Advanced Metrics Terminal & Goal Replays Buttons */}
       <div className="dash-actions" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', alignItems: 'flex-start' }}>
-        <div className="am-toggle-wrap" style={{ marginTop: '32px' }}>
+        <div className="am-toggle-wrap" style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
           <GradientScoring matchId={matchId} homeTeam={homeTeam} awayTeam={awayTeam} />
+          <AIGuide matchId={matchId} feature="gradientScoring" />
         </div>
-        <AdvancedMetrics matchId={matchId} homeTeam={homeTeam} awayTeam={awayTeam} />
-        
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+          <AdvancedMetrics matchId={matchId} homeTeam={homeTeam} awayTeam={awayTeam} />
+          <AIGuide matchId={matchId} feature="advancedMetrics" />
+        </div>
         <div className="am-toggle-wrap" style={{ marginTop: '32px' }}>
-          <button 
-            className="am-toggle-btn" 
+          <button
+            className="am-toggle-btn"
             onClick={() => setActiveView(activeView === 'goalReplays' ? '' : 'goalReplays')}
-            style={{ 
+            style={{
               background: activeView === 'goalReplays' ? '#1e293b' : undefined,
               borderColor: activeView === 'goalReplays' ? '#60a5fa' : undefined,
               color: activeView === 'goalReplays' ? '#ffffff' : undefined,
@@ -218,9 +222,9 @@ export default function Dashboard({ matchId, onBack }) {
         {activeView !== 'goalReplays' && (
           <div className="view-selector-header">
             <span className="view-selector-label">Visualisation:</span>
-            <select 
-              className="view-dropdown" 
-              value={activeView} 
+            <select
+              className="view-dropdown"
+              value={activeView}
               onChange={(e) => setActiveView(e.target.value)}
             >
               <option value="" disabled>Select visualization...</option>
@@ -228,6 +232,9 @@ export default function Dashboard({ matchId, onBack }) {
                 <option key={v.id} value={v.id}>{v.label}</option>
               ))}
             </select>
+            {activeView && TEAM_VIEWS.find(v => v.id === activeView) && (
+              <AIGuide matchId={matchId} feature={activeView} />
+            )}
           </div>
         )}
         <div className="view-content">

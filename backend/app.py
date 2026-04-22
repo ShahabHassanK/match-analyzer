@@ -16,10 +16,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 
+from fastapi.responses import StreamingResponse
+
 from services.discovery_service import search_fixtures
 from services.event_scraper import scrape_whoscored
 from services import match_analyzer
 from services.gradient_scoring import get_gradient_scoring
+from services.explain_service import stream_explanation
 
 
 # ─── App Setup ────────────────────────────────────────────────────────────────
@@ -332,3 +335,17 @@ async def api_goal_build_ups(match_id: str):
     """Event sequences leading up to goals for 2D animated replay."""
     csv_path = _resolve_csv(match_id)
     return {"status": "ok", "data": match_analyzer.get_goal_build_ups(csv_path)}
+
+
+class ExplainRequest(BaseModel):
+    feature: str
+
+
+@app.post("/api/match/{match_id}/explain")
+async def api_explain_feature(match_id: str, req: ExplainRequest):
+    """Stream a contextual AI explanation of a specific feature for this match."""
+    csv_path = _resolve_csv(match_id)
+    return StreamingResponse(
+        stream_explanation(csv_path, req.feature),
+        media_type="text/event-stream",
+    )

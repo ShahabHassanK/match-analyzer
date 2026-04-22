@@ -112,3 +112,14 @@ export function fetchAverageShape(matchId) {
 export function fetchGoalBuildUps(matchId) {
   return request(`/match/${matchId}/goal-build-ups`);
 }
+
+/* ── AI Guide ────────────────────────────────────────────────────────────── */
+
+// Returns raw fetch Response for SSE streaming
+export function explainFeature(matchId, feature) {
+  return fetch(`${BASE_URL}/match/${matchId}/explain`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ feature }),
+  });
+}

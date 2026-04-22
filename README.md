@@ -15,10 +15,11 @@
 7. [Stage 4 — Visualizations](#stage-4--visualizations)
     - [2D Match Replays](#2d-goal-replays)
 8. [Stage 5 — Advanced Performance Analytics](#stage-5--advanced-performance-analytics)
-9. [Stage 6 — Gradient Performance Matrix](#stage-6--gradient-performance-matrix)
-10. [Getting Started](#getting-started)
-11. [API Reference](#api-reference)
-12. [Configuration](#configuration)
+9. [Stage 6 — AI Guide](#stage-6--ai-guide-ai-explanations)
+10. [Stage 7 — Gradient Performance Matrix](#stage-7--gradient-performance-matrix)
+11. [Getting Started](#getting-started)
+12. [API Reference](#api-reference)
+13. [Configuration](#configuration)
 
 ---
 
@@ -423,7 +424,25 @@ A comprehensive data panel that provides a side-by-side comparison of 13 advance
   
 ---
 
-## Stage 6 — Gradient Performance Matrix
+## Stage 6 — AI Guide (✦ AI Explanations)
+
+**Component:** `frontend/src/components/AIGuide.jsx` | **Service:** `backend/services/explain_service.py`
+
+Each visualization and analytics panel includes a **✦ AI Guide** button. Clicking it opens a contextual explanation powered by Groq's LLM that analyzes *this specific match's* performance in ~130 words:
+
+- **What it shows**: How to read the visualization and what metrics matter
+- **Match analysis**: Real numbers and player names — what was the team's actual performance, what stood out, does it match the result?
+
+**Supported explanations:**
+- Shot Maps, Pass Networks, Momentum, Defensive Actions, Zone Entries, Set Pieces, Average Shape
+- Gradient Scoring (with detailed sub-score breakdown)
+- Advanced Metrics
+
+**Requirements:** `GROQ_API_KEY` in `backend/.env` (optional; all other features work without it)
+
+---
+
+## Stage 7 — Gradient Performance Matrix
 
 **Component:** `frontend/src/components/GradientScoring.jsx`
 
@@ -457,10 +476,10 @@ Measures the efficiency and threat of a team's offensive phases.
 **Formula:**
 ```python
 att_score = (
-    min(prog_p/80, 1) * 7 + min(prog_c/60, 1) * 3 + min(xg_est/2.5, 1) * 5 + min(corners/10, 1) * 5 +
-    min(box_shots/15, 1) * 10 + min(sot_pct/45, 1) * 5 + max(0, min((28-avg_dist)/15, 1)) * 5 + min(goals/3, 1) * 10 +
-    min(box_entries/35, 1) * 15 + min(z14_entries/30, 1) * 5 + min(box_touches/45, 1) * 10 + min(deep_progs/20, 1) * 5 +
-    min(kp/18, 1) * 10 + min(cross_acc/35, 1) * 5
+    min(prog_p/60, 1) * 7 + min(prog_c/45, 1) * 3 + min(xg_est/2.5, 1) * 5 + min(corners/10, 1) * 5 +
+    min(box_shots/12, 1) * 10 + min(sot_pct/45, 1) * 5 + max(0, min((28-avg_dist)/15, 1)) * 5 + min(goals/3, 1) * 10 +
+    min(box_entries/25, 1) * 15 + min(z14_entries/20, 1) * 5 + min(box_touches/35, 1) * 10 + min(deep_progs/20, 1) * 5 +
+    min(kp/14, 1) * 10 + min(cross_acc/35, 1) * 5
 )
 ```
 
@@ -492,9 +511,9 @@ Measures the ability to suppress opponent play and maintain solidity.
 **Formula:**
 ```python
 def_score = (
-    max(0, 20 - (opp_prog * 0.12)) + max(0, 10 - (opp_box_ent * 0.25)) +
+    max(0, 20 * (1 - max(0, opp_prog - 30) / 120)) + max(0, 10 - max(0, opp_box_ent - 5) * 0.2) +
     max(0, 10 - (opp_box_shots * 0.5)) + max(0, 10 - (opp_sot_pct * 0.15)) + min(opp_dist/25, 1) * 10 +
-    max(0, 10 - (ppda - 10) * 0.5) + min(high_recov/12, 1) * 10 +
+    max(0, 10 - max(0, ppda - 8) * 0.35) + min(high_recov/12, 1) * 10 +
     min(def_duels/70, 1) * 5 + min(aerial_pct/65, 1) * 5 +
     min(tackles/25, 1) * 3 + min(inters/15, 1) * 3 + min(clears/30, 1) * 2 + min(blocks/10, 1) * 2
 )
@@ -502,6 +521,16 @@ def_score = (
 
 ### Directional Play Correction
 The engine automatically detects each team's attacking direction (x > 50 vs x < 50) by analyzing their average shot coordinates. This ensures that "Box Entries" and "Field Tilt" are accurately calculated even when WhoScored data varies its coordinate normalization between matches.
+
+### Recent Calibration Improvements
+
+The scoring system was recalibrated to produce realistic score distributions:
+
+**Attacking:** Thresholds lowered to typical elite-level performance (e.g., 12 box shots instead of 15, 25 box entries instead of 35). A strong attacking display now scores 60–80 instead of 40–60.
+
+**Defense:** The suppression formula was restructured from a harsh subtraction model to a baseline-relative formula: `20 * (1 - max(0, opp_prog - 30) / 120)`. This gives credit for keeping opponent progressive actions below 150 (realistic) rather than below zero (impossible). Defensive displays now accurately score 55–75 instead of 20–40.
+
+**Breakdown accuracy:** All 14 attacking metrics now appear in the breakdown categories (goals, shot distance, xG estimate, deep progressions were previously missing), and breakdown values are properly clamped to prevent negative or inflated sub-scores.
 
 ---
 
@@ -512,6 +541,18 @@ The engine automatically detects each team's attacking direction (x > 50 vs x < 
 - Python 3.10+
 - Node.js 18+
 - npm
+
+### Environment Variables
+
+Copy `backend/.env.example` to `backend/.env` and fill in your key:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `GROQ_API_KEY` | Optional | Powers the **✦ AI Guide** feature (per-visualization explanations). Get a free key at [console.groq.com](https://console.groq.com). All other analytics features work without it. |
 
 ### Backend Setup
 

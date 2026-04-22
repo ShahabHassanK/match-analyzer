@@ -102,10 +102,10 @@ def get_gradient_scoring(csv_path: str) -> dict:
 
         # Weighted Category Scoring
         att_score = (
-            min(prog_p/80, 1) * 7 + min(prog_c/60, 1) * 3 + min(xg_est/2.5, 1) * 5 + min(corners/10, 1) * 5 +
-            min(box_shots/15, 1) * 10 + min(sot_pct/45, 1) * 5 + max(0, min((28-avg_dist)/15, 1)) * 5 + min(goals/3, 1) * 10 +
-            min(box_entries/35, 1) * 15 + min(z14_entries/30, 1) * 5 + min(box_touches/45, 1) * 10 + min(deep_progs/20, 1) * 5 +
-            min(kp/18, 1) * 10 + min(cross_acc/35, 1) * 5
+            min(prog_p/60, 1) * 7 + min(prog_c/45, 1) * 3 + min(xg_est/2.5, 1) * 5 + min(corners/10, 1) * 5 +
+            min(box_shots/12, 1) * 10 + min(sot_pct/45, 1) * 5 + max(0, min((28-avg_dist)/15, 1)) * 5 + min(goals/3, 1) * 10 +
+            min(box_entries/25, 1) * 15 + min(z14_entries/20, 1) * 5 + min(box_touches/35, 1) * 10 + min(deep_progs/20, 1) * 5 +
+            min(kp/14, 1) * 10 + min(cross_acc/35, 1) * 5
         ) / 1.0 # 100 max
 
         # ── DEFENSIVE SCORE (14 METRICS) ──
@@ -128,9 +128,9 @@ def get_gradient_scoring(csv_path: str) -> dict:
         blocks = len(t[t["type"] == "BlockedShot"])
 
         def_score = (
-            max(0, 20 - (opp_prog * 0.12)) + max(0, 10 - (opp_box_ent * 0.25)) +
+            max(0, 20 * (1 - max(0, opp_prog - 30) / 120)) + max(0, 10 - max(0, opp_box_ent - 5) * 0.2) +
             max(0, 10 - (opp_box_shots * 0.5)) + max(0, 10 - (opp_sot_pct * 0.15)) + min(opp_dist/25, 1) * 10 +
-            max(0, 10 - (ppda - 10) * 0.5) + min(high_recov/12, 1) * 10 +
+            max(0, 10 - max(0, ppda - 8) * 0.35) + min(high_recov/12, 1) * 10 +
             min(def_duels/70, 1) * 5 + min(aerial_pct/65, 1) * 5 +
             min(tackles/25, 1) * 3 + min(inters/15, 1) * 3 + min(clears/30, 1) * 2 + min(blocks/10, 1) * 2
         )
@@ -167,10 +167,10 @@ def get_gradient_scoring(csv_path: str) -> dict:
             "attack": {
                 "score": float(round(min(att_score, 100), 1)),
                 "breakdown": {
-                    "Threat Generation": float(round(prog_p/80 * 7 + prog_c/60 * 3 + corners/10 * 5, 1)),
-                    "Shooting Score": float(round(box_shots/15 * 10 + sot_pct/45 * 5 + (28-avg_dist)/15 * 5, 1)),
-                    "Penetration": float(round(box_entries/35 * 15 + z14_entries/30 * 5 + box_touches/45 * 10, 1)),
-                    "Creativity": float(round(kp/18 * 10 + cross_acc/35 * 5, 1))
+                    "Threat Generation": float(round(min(prog_p/60, 1)*7 + min(prog_c/45, 1)*3 + min(corners/10, 1)*5, 1)),
+                    "Shooting Score": float(round(min(box_shots/12, 1)*10 + min(sot_pct/45, 1)*5 + max(0, min((28-avg_dist)/15, 1))*5 + min(xg_est/2.5, 1)*5 + min(goals/3, 1)*10, 1)),
+                    "Penetration": float(round(min(box_entries/25, 1)*15 + min(z14_entries/20, 1)*5 + min(box_touches/35, 1)*10 + min(deep_progs/20, 1)*5, 1)),
+                    "Creativity": float(round(min(kp/14, 1)*10 + min(cross_acc/35, 1)*5, 1))
                 },
                 "stats": {
                     "Box Shots": int(box_shots),
@@ -184,9 +184,9 @@ def get_gradient_scoring(csv_path: str) -> dict:
             "defense": {
                 "score": float(round(min(def_score, 100), 1)),
                 "breakdown": {
-                    "Suppression": float(round(max(0, 20-opp_prog*0.12) + max(0, 10-opp_box_ent*0.25), 1)),
+                    "Suppression": float(round(max(0, 20*(1-max(0, opp_prog-30)/120)) + max(0, 10-max(0, opp_box_ent-5)*0.2), 1)),
                     "Shot Denial": float(round(max(0, 10-opp_box_shots*0.5) + max(0, 10-opp_sot_pct*0.15) + min(opp_dist/25, 1)*10, 1)),
-                    "Pressing": float(round(max(0, 10-(ppda-10)*0.5) + min(high_recov/12, 1)*10, 1)),
+                    "Pressing": float(round(max(0, 10-max(0, ppda-8)*0.35) + min(high_recov/12, 1)*10, 1)),
                     "Solidity": float(round(min(def_duels/70, 1)*5 + min(aerial_pct/65, 1)*5 + min(tackles/25, 1)*3 + min(inters/15, 1)*3 + min(clears/30, 1)*2 + min(blocks/10, 1)*2, 1))
                 },
                 "stats": {
