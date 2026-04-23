@@ -35,18 +35,21 @@ import {
   fetchSetPieces,
   fetchAverageShape,
   fetchGoalBuildUps,
+  fetchPlayerActions,
 } from '../services/api';
 
 
 const TEAM_VIEWS = [
-  { id: 'momentum',    label: 'Match Momentum' },
-  { id: 'shots',       label: 'Shot Map' },
-  { id: 'passNetwork', label: 'Pass Network' },
-  { id: 'defensive',   label: 'Defensive Actions' },
-  { id: 'zoneEntries', label: 'Creative Play' },
-  { id: 'setPieces',   label: 'Set Pieces' },
-  { id: 'averageShape',label: 'Tactical Shape' },
+  { id: 'momentum',     label: 'Match Momentum' },
+  { id: 'shots',        label: 'Shot Map' },
+  { id: 'passNetwork',  label: 'Pass Network' },
+  { id: 'defensive',    label: 'Defensive Actions' },
+  { id: 'zoneEntries',  label: 'Creative Play' },
+  { id: 'setPieces',    label: 'Set Pieces' },
+  { id: 'averageShape', label: 'Tactical Shape' },
 ];
+
+const PERIOD_LABELS = { full: 'Full Match', FirstHalf: '1st Half', SecondHalf: '2nd Half' };
 
 const PLAYER_VIEWS = [
   { id: 'playerActions',   label: 'Actions',    icon: '👟' },
@@ -64,53 +67,65 @@ export default function Dashboard({ matchId, onBack }) {
   // View state
   const [activeView, setActiveView] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [activePeriod, setActivePeriod] = useState('full');
 
-  // Lazy-loaded view data cache
+  // Lazy-loaded view data cache — keyed by `${view}_${period}` or `${view}_${player}_${period}`
   const [viewData, setViewData] = useState({});
 
-  // ── Load core data ──────────────────────────────────────────────────────
+  // ── Load core match data (XI only — doesn't change by period) ───────────
   useEffect(() => {
     setLoading(true);
     setError(null);
     setViewData({});
     setSelectedPlayer(null);
     setActiveView('');
+    setActivePeriod('full');
 
-    Promise.all([fetchSummary(matchId), fetchStartingXI(matchId)])
-      .then(([sum, startXI]) => {
-        setSummary(sum);
-        setXI(startXI);
-      })
+    fetchStartingXI(matchId)
+      .then(startXI => setXI(startXI))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, [matchId]);
 
+  // ── Reload summary when matchId or period changes ───────────────────────
+  useEffect(() => {
+    if (!matchId) return;
+    const period = activePeriod === 'full' ? null : activePeriod;
+    fetchSummary(matchId, period)
+      .then(sum => setSummary(sum))
+      .catch(console.error);
+  }, [matchId, activePeriod]);
+
   // ── Lazy view data fetching ─────────────────────────────────────────────
   useEffect(() => {
-    if (!matchId || !summary) return;
-    const cacheKey = selectedPlayer ? `${activeView}_${selectedPlayer}` : activeView;
+    if (!matchId || !xi) return;
+
+    const period = activePeriod === 'full' ? null : activePeriod;
+    const baseCacheKey = selectedPlayer ? `${activeView}_${selectedPlayer}` : activeView;
+    const cacheKey = `${baseCacheKey}_${activePeriod}`;
     if (viewData[cacheKey]) return;
 
+    const p = period;
+
     const fetchers = {
-      shots: () => fetchShots(matchId),
-      passNetwork: () => fetchPassNetwork(matchId),
-      momentum: () => fetchMomentum(matchId),
-      defensive: () => fetchDefensiveActions(matchId),
-      zoneEntries: () => fetchZoneEntries(matchId),
-      setPieces: () => fetchSetPieces(matchId),
-      averageShape: () => fetchAverageShape(matchId),
-      goalReplays: () => fetchGoalBuildUps(matchId),
+      shots:         () => fetchShots(matchId, p),
+      passNetwork:   () => fetchPassNetwork(matchId, undefined, p),
+      momentum:      () => fetchMomentum(matchId, 5, p),
+      defensive:     () => fetchDefensiveActions(matchId, p),
+      zoneEntries:   () => fetchZoneEntries(matchId, p),
+      setPieces:     () => fetchSetPieces(matchId, p),
+      averageShape:  () => fetchAverageShape(matchId, p),
+      goalReplays:   () => fetchGoalBuildUps(matchId, p),
+      playerActions: selectedPlayer ? () => fetchPlayerActions(matchId, selectedPlayer, undefined, p) : null,
     };
 
     const fetcher = fetchers[activeView];
     if (!fetcher) return;
-    const promise = fetcher();
-    if (!promise) return;
 
-    promise
+    fetcher()
       .then(data => setViewData(prev => ({ ...prev, [cacheKey]: data })))
       .catch(console.error);
-  }, [matchId, activeView, selectedPlayer, summary]);
+  }, [matchId, activeView, selectedPlayer, activePeriod, xi]);
 
   // ── Player selection ────────────────────────────────────────────────────
   const handleSelectPlayer = useCallback((player) => {
@@ -133,7 +148,8 @@ export default function Dashboard({ matchId, onBack }) {
 
   // ── Render view ─────────────────────────────────────────────────────────
   const renderView = () => {
-    const cacheKey = selectedPlayer ? `${activeView}_${selectedPlayer}` : activeView;
+    const baseCacheKey = selectedPlayer ? `${activeView}_${selectedPlayer}` : activeView;
+    const cacheKey = `${baseCacheKey}_${activePeriod}`;
     const data = viewData[cacheKey];
     if (!data) return <div className="view-loading">Loading specific view data…</div>;
 
@@ -145,7 +161,7 @@ export default function Dashboard({ matchId, onBack }) {
     if (activeView === 'setPieces') return <SetPiecesView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
     if (activeView === 'averageShape') return <AverageShapeView data={data} homeTeam={homeTeam} awayTeam={awayTeam} />;
     if (activeView === 'goalReplays') return <GoalReplaysView data={data} />;
-    
+
     if (activeView === 'playerActions') return <PlayerActionsView data={data} />;
 
     return (
@@ -215,6 +231,19 @@ export default function Dashboard({ matchId, onBack }) {
             {activeView === 'goalReplays' ? 'Close 2D Goal Replay' : '2D Goal Replay'}
           </button>
         </div>
+      </div>
+
+      {/* Period Filter */}
+      <div className="period-selector">
+        {Object.entries(PERIOD_LABELS).map(([key, label]) => (
+          <button
+            key={key}
+            className={`period-btn${activePeriod === key ? ' active' : ''}`}
+            onClick={() => setActivePeriod(key)}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {/* Single View Panel */}

@@ -243,6 +243,34 @@ export default function SetPiecesView({ data, homeTeam, awayTeam }) {
           )}
         </div>
 
+        {/* Corner Landing Zones — only shown for Corners tab */}
+        {activeType === 'corners' && teamData?.cornerZones?.length > 0 && (
+          <div className="sp-corner-zones">
+            <h4 className="sp-sidebar-title" style={{ marginBottom: 'var(--space-md)' }}>Corner Landing Zones</h4>
+            <div className="sp-cz-list">
+              {teamData.cornerZones.map(z => (
+                <div key={z.zone} className="sp-cz-row">
+                  <div className="sp-cz-label">{z.label}</div>
+                  <div className="sp-cz-bar-area">
+                    <div
+                      className="sp-cz-bar"
+                      style={{
+                        width: `${Math.min(100, (z.count / (teamData.cornerZones[0]?.count || 1)) * 100)}%`,
+                        background: z.goals > 0 ? '#00F485' : z.shots > 0 ? '#f59e0b' : '#38bdf8',
+                      }}
+                    />
+                  </div>
+                  <div className="sp-cz-stats">
+                    <span className="sp-cz-count">{z.count}</span>
+                    {z.shots > 0 && <span className="sp-cz-shot">{z.shotPct}% shot</span>}
+                    {z.goals > 0 && <span className="sp-cz-goal">⚽ {z.goals}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Sidebar: Summary Stats */}
         <div className="sp-sidebar">
           {/* Legend */}

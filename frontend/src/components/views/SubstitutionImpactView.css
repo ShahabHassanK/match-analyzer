@@ -1,0 +1,207 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   SUBSTITUTION IMPACT VIEW
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.si-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  font-family: var(--font-family);
+}
+
+.si-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.si-title {
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+
+.si-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin: 0;
+  max-width: 520px;
+}
+
+.si-team-toggle {
+  display: flex;
+  background: var(--bg-badge);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.si-btn {
+  padding: 7px 18px;
+  border-radius: 6px;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+  background: transparent;
+}
+
+.si-btn:hover { color: var(--text-primary); }
+.si-btn.active.home { background: var(--color-home); color: #0f172a; }
+.si-btn.active.away { background: var(--color-away); color: #0f172a; }
+
+/* Table */
+.si-table-wrapper {
+  overflow-x: auto;
+}
+
+.si-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.si-table thead tr {
+  border-bottom: 2px solid var(--border-light);
+}
+
+.si-table th {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.si-th-sub {
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: none;
+  color: var(--text-muted);
+  margin-top: 2px;
+  letter-spacing: 0;
+}
+
+.si-table tbody tr {
+  border-bottom: 1px solid var(--border-lighter, #1e293b);
+  transition: background var(--transition-fast);
+}
+
+.si-table tbody tr:hover { background: var(--bg-badge); }
+.si-table tbody tr:last-child { border-bottom: none; }
+.si-row-limited { opacity: 0.65; }
+
+.si-cell {
+  padding: 14px 12px;
+  vertical-align: middle;
+}
+
+.si-minute {
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.si-players {
+  min-width: 160px;
+}
+
+.si-player-on {
+  font-weight: 700;
+  color: #4ade80;
+  font-size: 12px;
+}
+
+.si-player-off {
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+/* Delta cells */
+.si-pos { color: #4ade80; }
+.si-neg { color: #f87171; }
+.si-na  { color: var(--text-muted); font-size: 18px; }
+.si-before-only { color: var(--text-secondary); }
+
+.si-after {
+  display: block;
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.si-delta {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+/* Goals column */
+.si-goals-before,
+.si-goals-after {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.si-goals-before { color: var(--text-muted); }
+.si-goals-after  { color: var(--text-primary); font-weight: 700; }
+
+/* Badge */
+.si-data-badge { white-space: nowrap; }
+
+.si-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm, 4px);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.si-badge.valid   { background: #14532d; color: #4ade80; }
+.si-badge.limited { background: #422006; color: #fb923c; }
+
+/* Empty state */
+.si-empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-muted);
+  font-size: var(--font-size-base);
+}
+
+/* Footnote */
+.si-footnote {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.si-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.si-pos-dot { background: #4ade80; }
+.si-neg-dot { background: #f87171; }

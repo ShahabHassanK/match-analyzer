@@ -49,8 +49,17 @@ export function fetchMatches() {
 
 /* ── Match-Level Analysis ────────────────────────────────────────────────── */
 
-export function fetchSummary(matchId) {
-  return request(`/match/${matchId}/summary`);
+function periodParam(period) {
+  return period ? `period=${encodeURIComponent(period)}` : '';
+}
+
+function buildQuery(parts) {
+  const filled = parts.filter(Boolean);
+  return filled.length ? `?${filled.join('&')}` : '';
+}
+
+export function fetchSummary(matchId, period) {
+  return request(`/match/${matchId}/summary${buildQuery([periodParam(period)])}`);
 }
 
 export function fetchStartingXI(matchId) {
@@ -61,56 +70,63 @@ export function fetchGradientScoring(matchId) {
   return request(`/match/${matchId}/gradient-scoring`);
 }
 
-export function fetchShots(matchId) {
-  return request(`/match/${matchId}/shots`);
+export function fetchShots(matchId, period) {
+  return request(`/match/${matchId}/shots${buildQuery([periodParam(period)])}`);
 }
 
-export function fetchPassNetwork(matchId, team) {
-  const query = team ? `?team=${encodeURIComponent(team)}` : '';
-  return request(`/match/${matchId}/pass-network${query}`);
+export function fetchPassNetwork(matchId, team, period) {
+  const parts = [
+    team ? `team=${encodeURIComponent(team)}` : '',
+    periodParam(period),
+  ];
+  return request(`/match/${matchId}/pass-network${buildQuery(parts)}`);
 }
 
 export function fetchPPDA(matchId) {
   return request(`/match/${matchId}/ppda`);
 }
 
-
-export function fetchMomentum(matchId, window = 5) {
-  return request(`/match/${matchId}/momentum?window=${window}`);
+export function fetchMomentum(matchId, window = 5, period) {
+  const parts = [`window=${window}`, periodParam(period)];
+  return request(`/match/${matchId}/momentum${buildQuery(parts)}`);
 }
 
-export function fetchDefensiveActions(matchId) {
-  return request(`/match/${matchId}/defensive-actions`);
+export function fetchDefensiveActions(matchId, period) {
+  return request(`/match/${matchId}/defensive-actions${buildQuery([periodParam(period)])}`);
 }
 
-export function fetchZoneEntries(matchId) {
-  return request(`/match/${matchId}/zone-entries`);
+export function fetchZoneEntries(matchId, period) {
+  return request(`/match/${matchId}/zone-entries${buildQuery([periodParam(period)])}`);
 }
 
+export function fetchSubstitutionImpact(matchId) {
+  return request(`/match/${matchId}/substitution-impact`);
+}
 
 /* ── Player-Level Analysis ───────────────────────────────────────────────── */
 
-export function fetchPlayerActions(matchId, playerName, actionType) {
-  const query = actionType ? `?action_type=${encodeURIComponent(actionType)}` : '';
-  return request(`/match/${matchId}/player/${encodeURIComponent(playerName)}/actions${query}`);
+export function fetchPlayerActions(matchId, playerName, actionType, period) {
+  const parts = [
+    actionType ? `action_type=${encodeURIComponent(actionType)}` : '',
+    periodParam(period),
+  ];
+  return request(`/match/${matchId}/player/${encodeURIComponent(playerName)}/actions${buildQuery(parts)}`);
 }
-
-
 
 export function fetchAdvancedMetrics(matchId) {
   return request(`/match/${matchId}/advanced-metrics`);
 }
 
-export function fetchSetPieces(matchId) {
-  return request(`/match/${matchId}/set-pieces`);
+export function fetchSetPieces(matchId, period) {
+  return request(`/match/${matchId}/set-pieces${buildQuery([periodParam(period)])}`);
 }
 
-export function fetchAverageShape(matchId) {
-  return request(`/match/${matchId}/average-shape`);
+export function fetchAverageShape(matchId, period) {
+  return request(`/match/${matchId}/average-shape${buildQuery([periodParam(period)])}`);
 }
 
-export function fetchGoalBuildUps(matchId) {
-  return request(`/match/${matchId}/goal-build-ups`);
+export function fetchGoalBuildUps(matchId, period) {
+  return request(`/match/${matchId}/goal-build-ups${buildQuery([periodParam(period)])}`);
 }
 
 /* ── AI Guide ────────────────────────────────────────────────────────────── */

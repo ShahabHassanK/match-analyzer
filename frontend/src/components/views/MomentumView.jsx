@@ -1,8 +1,16 @@
 import { useState, useMemo, useRef } from 'react';
 import './MomentumView.css';
 
+const ANNOTATION_COLORS = {
+  goal:         '#00F485',
+  redCard:      '#ef4444',
+  substitution: '#94a3b8',
+};
+
 export default function MomentumView({ data }) {
   const [hoverMinute, setHoverMinute] = useState(null);
+  const [hoveredAnnotation, setHoveredAnnotation] = useState(null);
+  const [annotationPos, setAnnotationPos] = useState({ x: 0, y: 0 });
   const svgRef = useRef(null);
 
   // Validate data
@@ -10,7 +18,7 @@ export default function MomentumView({ data }) {
     return <div className="view-loading">No momentum data available.</div>;
   }
 
-  const { homeTeam, awayTeam, timeline } = data;
+  const { homeTeam, awayTeam, timeline, annotations = [] } = data;
   const maxMinute = Math.max(...timeline.map(t => t.minute));
   
   // Find min/max values for Y-axis scaling
@@ -162,19 +170,49 @@ export default function MomentumView({ data }) {
                 className="mo-line" 
               />
 
+              {/* Annotation Markers */}
+              {annotations.map((ann, i) => {
+                const ax = getX(ann.minute);
+                const color = ANNOTATION_COLORS[ann.type] || '#94a3b8';
+                const isGoal = ann.type === 'goal';
+                return (
+                  <g
+                    key={i}
+                    className="mo-annotation"
+                    onMouseEnter={(e) => {
+                      setHoveredAnnotation(ann);
+                      setAnnotationPos({ x: e.clientX + 12, y: e.clientY - 10 });
+                    }}
+                    onMouseLeave={() => setHoveredAnnotation(null)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <line
+                      x1={ax} y1="0" x2={ax} y2={SVG_HEIGHT}
+                      stroke={color}
+                      strokeWidth={isGoal ? 2 : 1}
+                      strokeDasharray={isGoal ? 'none' : '4 3'}
+                      opacity="0.7"
+                    />
+                    {isGoal && (
+                      <circle cx={ax} cy={zeroY} r="5" fill={color} opacity="0.9" />
+                    )}
+                  </g>
+                );
+              })}
+
               {/* Hover Marker */}
               {hoverMinute !== null && hoverData && (
                 <g className="mo-hover-group">
-                  <line 
-                    x1={getX(hoverData.minute)} y1="0" 
-                    x2={getX(hoverData.minute)} y2={SVG_HEIGHT} 
-                    className="mo-hover-line" 
+                  <line
+                    x1={getX(hoverData.minute)} y1="0"
+                    x2={getX(hoverData.minute)} y2={SVG_HEIGHT}
+                    className="mo-hover-line"
                   />
-                  <circle 
-                    cx={getX(hoverData.minute)} 
-                    cy={getY(hoverData.difference)} 
-                    r="6" 
-                    className={`mo-hover-point ${hoverData.difference >= 0 ? 'home' : 'away'}`} 
+                  <circle
+                    cx={getX(hoverData.minute)}
+                    cy={getY(hoverData.difference)}
+                    r="6"
+                    className={`mo-hover-point ${hoverData.difference >= 0 ? 'home' : 'away'}`}
                   />
                 </g>
               )}
@@ -231,6 +269,42 @@ export default function MomentumView({ data }) {
               {hoverData.difference >= 0 ? homeTeam : awayTeam} ({Math.abs(hoverData.difference).toFixed(2)})
             </span>
           </div>
+        </div>
+      )}
+
+      {/* Annotation Tooltip */}
+      {hoveredAnnotation && (
+        <div
+          className="mo-tooltip"
+          style={{ position: 'fixed', left: annotationPos.x, top: annotationPos.y, zIndex: 1001 }}
+        >
+          <div className="mo-tt-time">
+            {hoveredAnnotation.type === 'goal' && (hoveredAnnotation.isOwnGoal ? 'Own Goal' : 'GOAL')}
+            {hoveredAnnotation.type === 'redCard' && 'Red Card'}
+            {hoveredAnnotation.type === 'substitution' && 'Substitution'}
+            {' — '}{hoveredAnnotation.minute}'
+          </div>
+          <div className="mo-tt-row">
+            <span className="mo-tt-label">Team:</span>
+            <span className="mo-tt-val">{hoveredAnnotation.team}</span>
+          </div>
+          {hoveredAnnotation.type === 'substitution' ? (
+            <>
+              <div className="mo-tt-row">
+                <span className="mo-tt-label">On:</span>
+                <span className="mo-tt-val" style={{ color: '#4ade80' }}>{hoveredAnnotation.playerOn}</span>
+              </div>
+              <div className="mo-tt-row">
+                <span className="mo-tt-label">Off:</span>
+                <span className="mo-tt-val" style={{ color: '#f87171' }}>{hoveredAnnotation.playerOff}</span>
+              </div>
+            </>
+          ) : (
+            <div className="mo-tt-row">
+              <span className="mo-tt-label">Player:</span>
+              <span className="mo-tt-val">{hoveredAnnotation.player}</span>
+            </div>
+          )}
         </div>
       )}
     </div>

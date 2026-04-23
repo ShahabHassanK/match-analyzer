@@ -108,13 +108,15 @@ def _get_player_match_stats(df: pd.DataFrame) -> dict:
 #  1. MATCH SUMMARY
 # ══════════════════════════════════════════════════════════════════════════════
 
-def get_match_summary(csv_path: str) -> dict:
+def get_match_summary(csv_path: str, period: str | None = None) -> dict:
     """
     Basic match facts: scoreline, shots, shots on target, saves, fouls, cards,
     corners, and possession estimate.
     """
     df = _load_match(csv_path)
     home, away = _team_names(df)
+    if period and period in ("FirstHalf", "SecondHalf"):
+        df = df[df["period"] == period]
 
     # Pre-compute own goal adjustments once
     all_goals = df[df["type"] == "Goal"]
@@ -241,7 +243,7 @@ def get_starting_xi(csv_path: str) -> dict:
 #  3. SHOT MAP
 # ══════════════════════════════════════════════════════════════════════════════
 
-def get_shot_map(csv_path: str) -> dict:
+def get_shot_map(csv_path: str, period: str | None = None) -> dict:
     """
     All shots with location and outcome category.
     Outcome colours: Goal (green), On Target/Saved (amber), Missed/Blocked (red).
@@ -249,6 +251,8 @@ def get_shot_map(csv_path: str) -> dict:
     """
     df = _load_match(csv_path)
     home, away = _team_names(df)
+    if period and period in ("FirstHalf", "SecondHalf"):
+        df = df[df["period"] == period]
     shots = df[df["type"].isin(SHOT_TYPES)].copy()
 
     def _outcome_category(row) -> str:
@@ -320,7 +324,7 @@ def get_shot_map(csv_path: str) -> dict:
 #  4. PASS NETWORK
 # ══════════════════════════════════════════════════════════════════════════════
 
-def get_pass_network(csv_path: str, team: str | None = None) -> dict:
+def get_pass_network(csv_path: str, team: str | None = None, period: str | None = None) -> dict:
     """
     Passing network: average position of each player + weighted edges between
     passers and receivers.
@@ -331,6 +335,8 @@ def get_pass_network(csv_path: str, team: str | None = None) -> dict:
     """
     df = _load_match(csv_path)
     home, away = _team_names(df)
+    if period and period in ("FirstHalf", "SecondHalf"):
+        df = df[df["period"] == period]
     teams_to_process = [team] if team else [home, away]
 
     networks = {}
@@ -482,7 +488,7 @@ def get_ppda(csv_path: str) -> dict:
 #  6B. AVERAGE IN-POSSESSION SHAPE
 # ══════════════════════════════════════════════════════════════════════════════
 
-def get_average_shape(csv_path: str) -> dict:
+def get_average_shape(csv_path: str, period: str | None = None) -> dict:
     """
     Average in-possession shape per player.
     Excludes set pieces and kick-offs to reflect strict open-play structure.
@@ -491,6 +497,8 @@ def get_average_shape(csv_path: str) -> dict:
     """
     df = _load_match(csv_path)
     home, away = _team_names(df)
+    if period and period in ("FirstHalf", "SecondHalf"):
+        df = df[df["period"] == period]
 
     def _get_initials(name):
         parts = str(name).split()
@@ -572,14 +580,17 @@ def get_average_shape(csv_path: str) -> dict:
 #  7. xT MOMENTUM TIMELINE
 # ══════════════════════════════════════════════════════════════════════════════
 
-def get_xT_momentum(csv_path: str, window: int = 5) -> dict:
+def get_xT_momentum(csv_path: str, window: int = 5, period: str | None = None) -> dict:
     """
     Rolling xT difference between home and away, plotted per minute.
     Positive = home dominance, negative = away dominance.
     Uses a sliding window for smoothing.
+    Includes match event annotations: goals, red cards, substitutions.
     """
     df = _load_match(csv_path)
     home, away = _team_names(df)
+    if period and period in ("FirstHalf", "SecondHalf"):
+        df = df[df["period"] == period]
 
     # Build per-minute xT sums for each team
     max_min = int(df["minute"].max()) + 1
@@ -593,7 +604,7 @@ def get_xT_momentum(csv_path: str, window: int = 5) -> dict:
         player_name = str(row["playerName"])
         if pd.notna(row["playerName"]):
             player_xt[player_name] += xt
-        
+
         if row["team"] == home:
             home_xT[m] += xt
         elif row["team"] == away:
@@ -619,16 +630,57 @@ def get_xT_momentum(csv_path: str, window: int = 5) -> dict:
 
     # Top 3 threat creators
     top_players = [
-        {"name": p, "xT": round(v, 2)} 
-        for p, v in sorted(player_xt.items(), key=lambda x: x[1], reverse=True) 
+        {"name": p, "xT": round(v, 2)}
+        for p, v in sorted(player_xt.items(), key=lambda x: x[1], reverse=True)
         if v > 0
     ][:3]
+
+    # Build match event annotations
+    annotations = []
+
+    for _, g in df[df["type"] == "Goal"].iterrows():
+        annotations.append({
+            "minute": int(g["minute"]),
+            "type": "goal",
+            "team": g["team"],
+            "player": g.get("playerName", ""),
+            "isOwnGoal": bool(g.get("is_own_goal", False)),
+        })
+
+    red_mask = df["is_red_card"] == True
+    if "is_second_yellow" in df.columns:
+        red_mask = red_mask | (df["is_second_yellow"] == True)
+    for _, r in df[red_mask].iterrows():
+        annotations.append({
+            "minute": int(r["minute"]),
+            "type": "redCard",
+            "team": r["team"],
+            "player": r.get("playerName", ""),
+        })
+
+    sub_on_events = df[df["type"] == "SubstitutionOn"]
+    sub_off_events = df[df["type"] == "SubstitutionOff"]
+    for _, s in sub_on_events.iterrows():
+        off_match = sub_off_events[
+            (sub_off_events["team"] == s["team"]) & (sub_off_events["minute"] == s["minute"])
+        ]
+        player_off = off_match.iloc[0]["playerName"] if not off_match.empty else ""
+        annotations.append({
+            "minute": int(s["minute"]),
+            "type": "substitution",
+            "team": s["team"],
+            "playerOn": s.get("playerName", ""),
+            "playerOff": player_off,
+        })
+
+    annotations.sort(key=lambda a: a["minute"])
 
     return {
         "homeTeam": home, "awayTeam": away,
         "windowSize": window,
         "timeline": timeline,
         "topPlayers": top_players,
+        "annotations": annotations,
     }
 
 
@@ -636,7 +688,7 @@ def get_xT_momentum(csv_path: str, window: int = 5) -> dict:
 #  8. DEFENSIVE ACTIONS HOTSPOT
 # ══════════════════════════════════════════════════════════════════════════════
 
-def get_defensive_actions(csv_path: str) -> dict:
+def get_defensive_actions(csv_path: str, period: str | None = None) -> dict:
     """
     Location scatter of tackles, interceptions, fouls, challenges, and ball
     recoveries per team.  Allows the frontend to visualise pressing height,
@@ -646,9 +698,14 @@ def get_defensive_actions(csv_path: str) -> dict:
     - isSetPiece   — whether it occurred during a set-piece sequence
     - leadsToShot  — whether a same-team shot followed within 15 seconds
     - shot*        — location / outcome of the resulting shot (if any)
+
+    Also returns duelsByZone: success rates for tackles, challenges, and aerials
+    broken down by defensive/middle/attacking thirds.
     """
     df = _load_match(csv_path)
     home, away = _team_names(df)
+    if period and period in ("FirstHalf", "SecondHalf"):
+        df = df[df["period"] == period]
 
     PRESSING_ACTIONS = DEFENSIVE_ACTIONS | {"BallRecovery"}
 
@@ -722,10 +779,42 @@ def get_defensive_actions(csv_path: str) -> dict:
             results.append(action_data)
         return results
 
+    def _duels_by_zone(team: str) -> dict:
+        t = df[df["team"] == team]
+        duel_types = {
+            "Tackle": t[t["type"] == "Tackle"],
+            "Challenge": t[t["type"] == "Challenge"],
+            "Aerial": t[t["type"] == "Aerial"],
+        }
+        zones = [
+            ("defensiveThird", 0, 33.3, "Defensive Third"),
+            ("middleThird", 33.3, 66.6, "Middle Third"),
+            ("attackingThird", 66.6, 100, "Attacking Third"),
+        ]
+        result = []
+        for zone_key, x_min, x_max, zone_label in zones:
+            zone_data = {"zone": zone_key, "label": zone_label}
+            for duel_type, duel_df in duel_types.items():
+                zone_duels = duel_df[
+                    duel_df["x"].notna()
+                    & (duel_df["x"] >= x_min) & (duel_df["x"] < x_max)
+                ]
+                total = len(zone_duels)
+                won = len(zone_duels[zone_duels["outcomeType"] == "Successful"])
+                zone_data[duel_type.lower()] = {
+                    "total": total,
+                    "won": won,
+                    "pct": round(won / total * 100, 1) if total else 0,
+                }
+            result.append(zone_data)
+        return result
+
     return {
         "homeTeam": home, "awayTeam": away,
         "home": _actions(home),
         "away": _actions(away),
+        "homeDuelsByZone": _duels_by_zone(home),
+        "awayDuelsByZone": _duels_by_zone(away),
         "playerStats": _get_player_match_stats(df),
     }
 
@@ -734,7 +823,7 @@ def get_defensive_actions(csv_path: str) -> dict:
 #  9. ZONE ENTRIES (Final Third + Zone 14)
 # ══════════════════════════════════════════════════════════════════════════════
 
-def get_zone_entries(csv_path: str) -> dict:
+def get_zone_entries(csv_path: str, period: str | None = None) -> dict:
     """
     Successful passes and carries that enter:
     - The Final Third (endX >= 67)
@@ -745,6 +834,8 @@ def get_zone_entries(csv_path: str) -> dict:
     """
     df = _load_match(csv_path)
     home, away = _team_names(df)
+    if period and period in ("FirstHalf", "SecondHalf"):
+        df = df[df["period"] == period]
 
     def _entries(team: str) -> dict:
         t_all = df[df["team"] == team]
@@ -865,7 +956,7 @@ def get_zone_entries(csv_path: str) -> dict:
 #  11. PLAYER ACTIONS (Individual Filtering)
 # ══════════════════════════════════════════════════════════════════════════════
 
-def get_player_actions(csv_path: str, player_name: str, action_type: str | None = None) -> dict:
+def get_player_actions(csv_path: str, player_name: str, action_type: str | None = None, period: str | None = None) -> dict:
     """
     All events for a specific player, optionally filtered by action type.
     Supported action_type values: 'pass', 'shot', 'tackle', 'carry',
@@ -873,6 +964,8 @@ def get_player_actions(csv_path: str, player_name: str, action_type: str | None 
     """
     df = _load_match(csv_path)
     home, away = _team_names(df)
+    if period and period in ("FirstHalf", "SecondHalf"):
+        df = df[df["period"] == period]
 
     player_events = df[df["playerName"] == player_name].copy()
 
@@ -1073,7 +1166,7 @@ def get_advanced_metrics(csv_path: str) -> dict:
 #  15. SET PIECE ANALYSIS
 # ══════════════════════════════════════════════════════════════════════════════
 
-def get_set_piece_analysis(csv_path: str) -> dict:
+def get_set_piece_analysis(csv_path: str, period: str | None = None) -> dict:
     """
     Comprehensive set piece analysis: corners and free kicks.
 
@@ -1086,9 +1179,13 @@ def get_set_piece_analysis(csv_path: str) -> dict:
     - Set piece shots/goals vs open play shots/goals
     - Penalty goals vs non-penalty goals
     - First contact rates for corners and free kicks
+
+    Also includes cornerZones: landing zone clusters for corner deliveries.
     """
     df = _load_match(csv_path)
     home, away = _team_names(df)
+    if period and period in ("FirstHalf", "SecondHalf"):
+        df = df[df["period"] == period]
 
     def _analyze_team(team: str) -> dict:
         t_all = df.copy().reset_index(drop=True)
@@ -1118,6 +1215,51 @@ def get_set_piece_analysis(csv_path: str) -> dict:
             row = t_all.loc[idx]
             delivery = _build_delivery(t_all, row, idx, team)
             free_kicks.append(delivery)
+
+        # ── Corner landing zone clusters ──────────────────────────────────
+        _CORNER_ZONE_LABELS = {
+            "sixYardBox": "Six-Yard Box",
+            "nearPost": "Near Post",
+            "farPost": "Far Post",
+            "penaltyArea": "Penalty Area",
+            "widePenaltyBox": "Wide Penalty Box",
+            "edgeOfBox": "Edge of Box",
+            "cleared": "Cleared / Short",
+        }
+
+        def _classify_corner_zone(ex: float, ey: float) -> str:
+            if ex >= 94:
+                if 37 <= ey <= 63:
+                    return "sixYardBox"
+                return "nearPost" if ey < 50 else "farPost"
+            if ex >= 83:
+                return "penaltyArea" if 33 <= ey <= 67 else "widePenaltyBox"
+            if ex >= 67:
+                return "edgeOfBox"
+            return "cleared"
+
+        corner_zone_agg: dict[str, dict] = {}
+        for c in corners:
+            zone = _classify_corner_zone(c["endX"], c["endY"])
+            if zone not in corner_zone_agg:
+                corner_zone_agg[zone] = {"count": 0, "shots": 0, "goals": 0}
+            corner_zone_agg[zone]["count"] += 1
+            if c["resultedInShot"]:
+                corner_zone_agg[zone]["shots"] += 1
+            if c["shotOutcome"] == "Goal":
+                corner_zone_agg[zone]["goals"] += 1
+
+        corner_zones = sorted([
+            {
+                "zone": z,
+                "label": _CORNER_ZONE_LABELS.get(z, z),
+                "count": v["count"],
+                "shots": v["shots"],
+                "goals": v["goals"],
+                "shotPct": round(v["shots"] / v["count"] * 100, 1) if v["count"] else 0,
+            }
+            for z, v in corner_zone_agg.items()
+        ], key=lambda x: x["count"], reverse=True)
 
         # ── Summary stats (derived from delivery data — same forward-looking logic) ──
         all_deliveries = corners + free_kicks
@@ -1176,6 +1318,7 @@ def get_set_piece_analysis(csv_path: str) -> dict:
         return {
             "corners": corners,
             "freeKicks": free_kicks,
+            "cornerZones": corner_zones,
             "summary": summary,
         }
 
@@ -1236,13 +1379,15 @@ def _build_delivery(df: pd.DataFrame, row: pd.Series, idx: int, team: str) -> di
 #  18. GOAL BUILD UPS (2D ANIMATION)
 # ══════════════════════════════════════════════════════════════════════════════
 
-def get_goal_build_ups(csv_path: str) -> dict:
+def get_goal_build_ups(csv_path: str, period: str | None = None) -> dict:
     """
     Extracts pass/carry sequences leading to a Goal for 2D animation.
     Traces backwards from the goal event as long as the ball remains with the scoring team.
     """
     df = _load_match(csv_path)
     home, away = _team_names(df)
+    if period and period in ("FirstHalf", "SecondHalf"):
+        df = df[df["period"] == period]
 
     goal_events = df[df["type"] == "Goal"]
     sequences = []
@@ -1317,4 +1462,96 @@ def get_goal_build_ups(csv_path: str) -> dict:
         "homeTeam": home,
         "awayTeam": away,
         "sequences": sequences
+    }
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  19. SUBSTITUTION IMPACT ANALYSIS
+# ══════════════════════════════════════════════════════════════════════════════
+
+def get_substitution_impact(csv_path: str, min_minutes_after: int = 10) -> dict:
+    """
+    For each substitution, compares team metrics in the 15-minute window before
+    and after the substitution event.
+
+    Metrics compared: xT rate (per minute), shots per 15 min, progressive passes
+    per 15 min, and goals scored in the window.
+
+    Substitutions with fewer than min_minutes_after minutes remaining are flagged
+    as having insufficient data for post-sub comparison.
+    """
+    df = _load_match(csv_path)
+    home, away = _team_names(df)
+
+    max_minute = int(df["minute"].max())
+
+    def _window_metrics(team: str, start_min: int, end_min: int) -> dict:
+        duration = end_min - start_min
+        if duration <= 0:
+            return {"xTRate": 0, "shotsP15": 0, "progPassesP15": 0, "goals": 0, "minutes": 0}
+        w = df[(df["team"] == team) & (df["minute"] >= start_min) & (df["minute"] < end_min)]
+        xT_rate = round(float(w["xT"].fillna(0).sum()) / duration, 4)
+        shots = len(w[w["type"].isin(SHOT_TYPES)])
+        prog_passes = int((w["prog_pass"] > 0).sum()) if "prog_pass" in w.columns else 0
+        goals = len(w[(w["type"] == "Goal") & (~w["is_own_goal"].fillna(False))])
+        return {
+            "xTRate": xT_rate,
+            "shotsP15": round(shots / duration * 15, 1),
+            "progPassesP15": round(prog_passes / duration * 15, 1),
+            "goals": goals,
+            "minutes": duration,
+        }
+
+    sub_on_events = df[df["type"] == "SubstitutionOn"].copy()
+    sub_off_events = df[df["type"] == "SubstitutionOff"]
+
+    # Track which SubstitutionOff events have been matched to avoid double-pairing
+    matched_off_indices: set[int] = set()
+
+    substitutions = []
+    for _, s in sub_on_events.iterrows():
+        minute = int(s["minute"])
+        team = s["team"]
+        player_on = s.get("playerName", "Unknown")
+
+        # Pair with an unmatched SubstitutionOff for the same team at the same minute
+        candidates = sub_off_events[
+            (sub_off_events["team"] == team)
+            & (sub_off_events["minute"] == s["minute"])
+            & (~sub_off_events.index.isin(matched_off_indices))
+        ]
+        if not candidates.empty:
+            off_idx = candidates.index[0]
+            matched_off_indices.add(off_idx)
+            player_off = candidates.loc[off_idx, "playerName"]
+        else:
+            player_off = "Unknown"
+
+        minutes_after = max_minute - minute
+        sufficient_data = minutes_after >= min_minutes_after
+
+        before_start = max(0, minute - 15)
+        after_end = min(max_minute + 1, minute + 16)
+
+        before = _window_metrics(team, before_start, minute)
+        after = _window_metrics(team, minute, after_end) if sufficient_data else None
+
+        substitutions.append({
+            "minute": minute,
+            "team": team,
+            "playerOn": player_on,
+            "playerOff": player_off,
+            "minutesAfter": minutes_after,
+            "sufficientData": sufficient_data,
+            "before": before,
+            "after": after,
+        })
+
+    substitutions.sort(key=lambda s: (s["team"] != home, s["minute"]))
+
+    return {
+        "homeTeam": home,
+        "awayTeam": away,
+        "minMinutesThreshold": min_minutes_after,
+        "substitutions": substitutions,
     }

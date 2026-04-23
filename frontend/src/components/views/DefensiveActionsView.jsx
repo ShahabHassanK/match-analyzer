@@ -188,7 +188,7 @@ export default function DefensiveActionsView({ data, homeTeam, awayTeam }) {
       </div>
 
       <div className="dv-body">
-        
+
         {/* Pitch Area */}
         <div className="dv-pitch-container">
           <svg viewBox="0 0 105 68" className="dv-pitch-svg" preserveAspectRatio="xMidYMid meet">

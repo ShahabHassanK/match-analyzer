@@ -226,10 +226,13 @@ async def list_matches():
 
 
 @app.get("/api/match/{match_id}/summary")
-async def api_match_summary(match_id: str):
+async def api_match_summary(
+    match_id: str,
+    period: Optional[str] = Query(None, description="Filter by period: FirstHalf or SecondHalf"),
+):
     """Basic match facts: scoreline, shots, saves, cards, possession."""
     csv_path = _resolve_csv(match_id)
-    return {"status": "ok", "data": match_analyzer.get_match_summary(csv_path)}
+    return {"status": "ok", "data": match_analyzer.get_match_summary(csv_path, period=period)}
 
 
 @app.get("/api/match/{match_id}/starting-xi")
@@ -240,20 +243,24 @@ async def api_starting_xi(match_id: str):
 
 
 @app.get("/api/match/{match_id}/shots")
-async def api_shot_map(match_id: str):
+async def api_shot_map(
+    match_id: str,
+    period: Optional[str] = Query(None, description="Filter by period: FirstHalf or SecondHalf"),
+):
     """Shot map with locations and outcome categories."""
     csv_path = _resolve_csv(match_id)
-    return {"status": "ok", "data": match_analyzer.get_shot_map(csv_path)}
+    return {"status": "ok", "data": match_analyzer.get_shot_map(csv_path, period=period)}
 
 
 @app.get("/api/match/{match_id}/pass-network")
 async def api_pass_network(
     match_id: str,
     team: Optional[str] = Query(None, description="Filter by team name"),
+    period: Optional[str] = Query(None, description="Filter by period: FirstHalf or SecondHalf"),
 ):
     """Pass network: player positions + weighted edges."""
     csv_path = _resolve_csv(match_id)
-    return {"status": "ok", "data": match_analyzer.get_pass_network(csv_path, team=team)}
+    return {"status": "ok", "data": match_analyzer.get_pass_network(csv_path, team=team, period=period)}
 
 
 @app.get("/api/match/{match_id}/ppda")
@@ -265,34 +272,44 @@ async def api_ppda(match_id: str):
 
 
 @app.get("/api/match/{match_id}/average-shape")
-async def api_average_shape(match_id: str):
+async def api_average_shape(
+    match_id: str,
+    period: Optional[str] = Query(None, description="Filter by period: FirstHalf or SecondHalf"),
+):
     """Average in-possession tactical shape per player."""
     csv_path = _resolve_csv(match_id)
-    return {"status": "ok", "data": match_analyzer.get_average_shape(csv_path)}
+    return {"status": "ok", "data": match_analyzer.get_average_shape(csv_path, period=period)}
 
 
 @app.get("/api/match/{match_id}/momentum")
 async def api_momentum(
     match_id: str,
     window: int = Query(5, description="Smoothing window size in minutes"),
+    period: Optional[str] = Query(None, description="Filter by period: FirstHalf or SecondHalf"),
 ):
     """xT momentum timeline showing match dominance over time."""
     csv_path = _resolve_csv(match_id)
-    return {"status": "ok", "data": match_analyzer.get_xT_momentum(csv_path, window=window)}
+    return {"status": "ok", "data": match_analyzer.get_xT_momentum(csv_path, window=window, period=period)}
 
 
 @app.get("/api/match/{match_id}/defensive-actions")
-async def api_defensive_actions(match_id: str):
+async def api_defensive_actions(
+    match_id: str,
+    period: Optional[str] = Query(None, description="Filter by period: FirstHalf or SecondHalf"),
+):
     """Defensive action scatter (tackles, interceptions, fouls)."""
     csv_path = _resolve_csv(match_id)
-    return {"status": "ok", "data": match_analyzer.get_defensive_actions(csv_path)}
+    return {"status": "ok", "data": match_analyzer.get_defensive_actions(csv_path, period=period)}
 
 
 @app.get("/api/match/{match_id}/zone-entries")
-async def api_zone_entries(match_id: str):
+async def api_zone_entries(
+    match_id: str,
+    period: Optional[str] = Query(None, description="Filter by period: FirstHalf or SecondHalf"),
+):
     """Final third and Zone 14 entry vectors."""
     csv_path = _resolve_csv(match_id)
-    return {"status": "ok", "data": match_analyzer.get_zone_entries(csv_path)}
+    return {"status": "ok", "data": match_analyzer.get_zone_entries(csv_path, period=period)}
 
 
 
@@ -301,10 +318,11 @@ async def api_player_actions(
     match_id: str,
     player_name: str,
     action_type: Optional[str] = Query(None, description="Filter: pass, shot, tackle, carry, cross, aerial, take_on, interception, clearance, block"),
+    period: Optional[str] = Query(None, description="Filter by period: FirstHalf or SecondHalf"),
 ):
     """All events for a specific player, optionally filtered by action type."""
     csv_path = _resolve_csv(match_id)
-    return {"status": "ok", "data": match_analyzer.get_player_actions(csv_path, player_name, action_type)}
+    return {"status": "ok", "data": match_analyzer.get_player_actions(csv_path, player_name, action_type, period=period)}
 
 
 
@@ -324,17 +342,30 @@ async def api_gradient_scoring(match_id: str):
 
 
 @app.get("/api/match/{match_id}/set-pieces")
-async def api_set_pieces(match_id: str):
+async def api_set_pieces(
+    match_id: str,
+    period: Optional[str] = Query(None, description="Filter by period: FirstHalf or SecondHalf"),
+):
     """Set piece analysis: corners, free kicks, deliveries, first contact, outcomes."""
     csv_path = _resolve_csv(match_id)
-    return {"status": "ok", "data": match_analyzer.get_set_piece_analysis(csv_path)}
+    return {"status": "ok", "data": match_analyzer.get_set_piece_analysis(csv_path, period=period)}
 
 
 @app.get("/api/match/{match_id}/goal-build-ups")
-async def api_goal_build_ups(match_id: str):
+async def api_goal_build_ups(
+    match_id: str,
+    period: Optional[str] = Query(None, description="Filter by period: FirstHalf or SecondHalf"),
+):
     """Event sequences leading up to goals for 2D animated replay."""
     csv_path = _resolve_csv(match_id)
-    return {"status": "ok", "data": match_analyzer.get_goal_build_ups(csv_path)}
+    return {"status": "ok", "data": match_analyzer.get_goal_build_ups(csv_path, period=period)}
+
+
+@app.get("/api/match/{match_id}/substitution-impact")
+async def api_substitution_impact(match_id: str):
+    """Substitution impact analysis: metrics before vs. after each substitution."""
+    csv_path = _resolve_csv(match_id)
+    return {"status": "ok", "data": match_analyzer.get_substitution_impact(csv_path)}
 
 
 class ExplainRequest(BaseModel):

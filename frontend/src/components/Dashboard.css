@@ -164,3 +164,34 @@
 .view-dropdown:hover {
   border-color: var(--color-primary);
 }
+
+/* ── Period Selector ── */
+.period-selector {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: center;
+}
+
+.period-btn {
+  padding: 7px 20px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  background: var(--bg-badge);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.period-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--text-primary);
+}
+
+.period-btn.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+  font-weight: 700;
+}
