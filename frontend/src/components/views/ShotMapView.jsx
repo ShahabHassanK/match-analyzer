@@ -40,7 +40,6 @@ export default function ShotMapView({ data, homeTeam, awayTeam }) {
   const goals = teamShots.filter(s => s.outcome === 'goal').length;
   const onTarget = teamShots.filter(s => s.outcome === 'on_target').length;
   const offTarget = teamShots.filter(s => s.outcome === 'off_target').length;
-  const expectedGoals = teamShots.reduce((acc, s) => acc + (s.isBigChance ? 0.35 : 0.08), 0).toFixed(2); // Mock xG sum
 
   // Coordinate Mapping for Vertical Half-Pitch
   // WhoScored attack right: x is 0(own)->100(opp), y is 0(right)->100(left) or vice versa.
@@ -79,7 +78,7 @@ export default function ShotMapView({ data, homeTeam, awayTeam }) {
         <div className="psm-summary">
           <div className="psm-sum-item"><span>{teamShots.length}</span> Shots</div>
           <div className="psm-sum-item"><span>{goals}</span> Goals</div>
-          <div className="psm-sum-item"><span>{expectedGoals}</span> xG (Est)</div>
+          <div className="psm-sum-item"><span>{onTarget}</span> On Target</div>
         </div>
       </div>
 

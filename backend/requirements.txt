@@ -17,18 +17,20 @@ requests==2.33.1
 duckduckgo_search==5.0
 
 # ── Data Processing ────────────────────────────────────────────────
-pandas==2.2.1
-numpy==1.26.4
+pandas==2.2.3
+
 python-dateutil==2.9.0.post0
 pytz==2026.1.post1
 tzdata==2026.1
 
 # ── Machine Learning (optional advanced metrics) ───────────────────
-scikit-learn==1.4.1.post1
-scipy==1.15.3
-xgboost==2.0.3
-joblib==1.5.3
 
+scipy==1.15.3
+
+joblib==1.5.3
+xgboost==3.2.0
+numpy==2.0.2
+scikit-learn==1.6.1
 # ── Visualisation (server-side, optional) ─────────────────────────
 matplotlib==3.8.3
 mplsoccer==1.2.2

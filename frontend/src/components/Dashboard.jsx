@@ -22,6 +22,7 @@ import MomentumView from './views/MomentumView';
 import PlayerActionsView from './views/PlayerActionsView';
 import GoalReplaysView from './views/GoalReplaysView';
 import AIGuide from './AIGuide';
+import XGBreakdown from './XGBreakdown';
 
 import {
   fetchSummary,
@@ -36,6 +37,7 @@ import {
   fetchAverageShape,
   fetchGoalBuildUps,
   fetchPlayerActions,
+  fetchXGBreakdown,
 } from '../services/api';
 
 
@@ -68,6 +70,7 @@ export default function Dashboard({ matchId, onBack }) {
   const [activeView, setActiveView] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [activePeriod, setActivePeriod] = useState('full');
+  const [xgOpen, setXgOpen] = useState(false);
 
   // Lazy-loaded view data cache — keyed by `${view}_${period}` or `${view}_${player}_${period}`
   const [viewData, setViewData] = useState({});
@@ -208,17 +211,38 @@ export default function Dashboard({ matchId, onBack }) {
         </div>
       </div>
 
-      {/* Advanced Metrics Terminal & Goal Replays Buttons */}
-      <div className="dash-actions" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', alignItems: 'flex-start' }}>
-        <div className="am-toggle-wrap" style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+      {/* Action Buttons Row — all tops aligned */}
+      <div className="dash-actions" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+
+        {/* xG Breakdown */}
+        <div className="am-toggle-wrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+          <button
+            className="am-toggle-btn"
+            onClick={() => {
+              setXgOpen(prev => !prev);
+              if (!xgOpen) setActiveView('');
+            }}
+            style={xgOpen ? { background: '#1e293b', borderColor: '#60a5fa', color: '#ffffff' } : {}}
+          >
+            {xgOpen ? 'Close xG Breakdown' : 'xG Breakdown'}
+          </button>
+          <div style={{ height: '28px' }} />
+        </div>
+
+        {/* Gradient Scoring */}
+        <div className="am-toggle-wrap" style={{ marginTop: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
           <GradientScoring matchId={matchId} homeTeam={homeTeam} awayTeam={awayTeam} />
           <AIGuide matchId={matchId} feature="gradientScoring" />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+
+        {/* Advanced Metrics */}
+        <div className="am-toggle-wrap" style={{ marginTop: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
           <AdvancedMetrics matchId={matchId} homeTeam={homeTeam} awayTeam={awayTeam} />
           <AIGuide matchId={matchId} feature="advancedMetrics" />
         </div>
-        <div className="am-toggle-wrap" style={{ marginTop: '32px' }}>
+
+        {/* 2D Goal Replay */}
+        <div className="am-toggle-wrap" style={{ marginTop: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
           <button
             className="am-toggle-btn"
             onClick={() => setActiveView(activeView === 'goalReplays' ? '' : 'goalReplays')}
@@ -230,8 +254,20 @@ export default function Dashboard({ matchId, onBack }) {
           >
             {activeView === 'goalReplays' ? 'Close 2D Goal Replay' : '2D Goal Replay'}
           </button>
+          <div style={{ height: '28px' }} />
         </div>
+
       </div>
+
+      {/* xG Breakdown Panel */}
+      {xgOpen && (
+        <XGBreakdown
+          matchId={matchId}
+          homeTeam={homeTeam}
+          awayTeam={awayTeam}
+          onClose={() => setXgOpen(false)}
+        />
+      )}
 
       {/* Period Filter */}
       <div className="period-selector">

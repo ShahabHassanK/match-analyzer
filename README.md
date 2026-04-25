@@ -17,9 +17,10 @@
 8. [Stage 5 — Advanced Performance Analytics](#stage-5--advanced-performance-analytics)
 9. [Stage 6 — AI Guide](#stage-6--ai-guide-ai-explanations)
 10. [Stage 7 — Gradient Performance Matrix](#stage-7--gradient-performance-matrix)
-11. [Getting Started](#getting-started)
-12. [API Reference](#api-reference)
-13. [Configuration](#configuration)
+11. [Stage 8 — xG Breakdown](#stage-8--xg-breakdown)
+12. [Getting Started](#getting-started)
+13. [API Reference](#api-reference)
+14. [Configuration](#configuration)
 
 ---
 
@@ -537,6 +538,57 @@ Thresholds are set to realistic elite-level performance so that strong displays 
 
 ---
 
+## Stage 8 — xG Breakdown
+
+**Component:** `frontend/src/components/XGBreakdown.jsx` | **Service:** `backend/services/xg_service.py` | **Model:** `backend/xg-model/my-xG-model/`
+
+A full Expected Goals (xG) engine powered by a trained XGBoost classifier. Unlike the simple xG proxy used in the Shot Map (distance + angle only), this model was trained on real match event data and incorporates a richer set of features — producing calibrated shot probabilities that closely match professional xG models.
+
+### The Model
+
+The XGBoost classifier (`xgb_xg_model.json`) was trained in Google Colab on a dataset of thousands of shots drawn from league match event streams. Training was performed with early stopping (`best_iteration = 107`) to prevent overfitting.
+
+**Features used for each shot:**
+
+| Feature | Description |
+|---|---|
+| `distance` | Euclidean distance to goal centre (metres) |
+| `angle_deg` | Angle subtended between both posts from the shot position |
+| `log_distance` | Log-transformed distance (compresses extreme range values) |
+| `is_header` | Headed attempt |
+| `is_volley` | Volley attempt |
+| `is_left_foot` / `is_right_foot` | Foot used |
+| `is_fast_break` | Shot taken on a counter-attack |
+| `is_big_chance` | WhoScored's high-quality chance flag |
+| `is_assist_throughball` | Preceded by a through ball |
+| `is_assist_cross` | Preceded by a cross |
+| `is_assist_corner` | Preceded by a corner |
+| `is_assist_freekick` | Preceded by a free kick |
+
+Assist context is backfilled from the pass event immediately preceding each shot (looking back up to 5 events), replicating exactly the logic from the training notebook. Distance and angle are clipped to the same bounds used during training (`xg_clip_values.pkl`) to prevent out-of-distribution inference.
+
+**Penalties** are excluded from model inference and assigned a fixed xG of **0.76** (the empirical conversion rate). **Own goals** are displayed in the breakdown with xG = 0 and credited to the benefiting team.
+
+### What's Shown
+
+![xG Match Summary](viz/matchXG.PNG)
+
+The summary cards show each team's total xG, non-penalty xG (npxG), goals, and shots — alongside an overperformance/underperformance badge comparing goals scored to xG generated. The cumulative xG timeline plots how scoring threat built throughout the match, with goal markers overlaid at each actual goal moment.
+
+![xG Shot-by-Shot Breakdown](viz/XGbreakdown.PNG)
+
+The shot-by-shot table lists every attempt in chronological order with player, minute, xG value, outcome, body part, and origin. A **team filter** (All / Home / Away) lets you isolate each side's shot profile instantly.
+
+### Endpoint
+
+```
+GET /api/match/{match_id}/xg-breakdown
+```
+
+Returns `summary`, `timeline`, `shots`, and `performance` keys. Consumed by the `XGBreakdown` component via `fetchXGBreakdown()` in `api.js`.
+
+---
+
 ## Getting Started
 
 ### Prerequisites
@@ -624,6 +676,7 @@ All endpoints are prefixed with `/api`.
 | `GET` | `/match/{id}/ppda` | PPDA by half |
 | `GET` | `/match/{id}/advanced-metrics` | Full advanced metrics terminal |
 | `GET` | `/match/{id}/gradient-scoring` | Gradient performance matrix score |
+| `GET` | `/match/{id}/xg-breakdown` | Full xG breakdown — summary, timeline, shot list |
 
 Interactive API docs available at `http://localhost:8000/docs` (Swagger UI).
 

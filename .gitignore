@@ -12,6 +12,9 @@ backend/.env.*
 backend/data/*.csv
 backend/data/*.json
 
+# xG model — training dataset (large, not needed at runtime)
+backend/xg-model/league_events_data/
+
 # Logs and temp
 backend/*.log
 

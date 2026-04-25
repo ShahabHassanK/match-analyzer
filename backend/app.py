@@ -23,6 +23,7 @@ from services.event_scraper import scrape_whoscored
 from services import match_analyzer
 from services.gradient_scoring import get_gradient_scoring
 from services.explain_service import stream_explanation
+from services import xg_service
 
 
 # ─── App Setup ────────────────────────────────────────────────────────────────
@@ -247,9 +248,10 @@ async def api_shot_map(
     match_id: str,
     period: Optional[str] = Query(None, description="Filter by period: FirstHalf or SecondHalf"),
 ):
-    """Shot map with locations and outcome categories."""
+    """Shot map with locations, outcome categories, and per-shot xG from the trained model."""
     csv_path = _resolve_csv(match_id)
     return {"status": "ok", "data": match_analyzer.get_shot_map(csv_path, period=period)}
+
 
 
 @app.get("/api/match/{match_id}/pass-network")
@@ -359,6 +361,13 @@ async def api_goal_build_ups(
     """Event sequences leading up to goals for 2D animated replay."""
     csv_path = _resolve_csv(match_id)
     return {"status": "ok", "data": match_analyzer.get_goal_build_ups(csv_path, period=period)}
+
+
+@app.get("/api/match/{match_id}/xg-breakdown")
+async def api_xg_breakdown(match_id: str):
+    """Full xG breakdown using the trained XGBoost model."""
+    csv_path = _resolve_csv(match_id)
+    return {"status": "ok", "data": xg_service.get_xg_breakdown(csv_path)}
 
 
 @app.get("/api/match/{match_id}/substitution-impact")

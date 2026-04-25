@@ -1,0 +1,429 @@
+/* ── xG Breakdown Panel — light/white theme ───────────────────────────────── */
+
+.xg-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  color: #1e293b;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.xg-panel-loading,
+.xg-panel-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 200px;
+  color: #64748b;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.xg-panel-error p {
+  color: #dc2626;
+  font-size: 0.9rem;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────────── */
+
+.xg-panel-header {
+  margin-bottom: 1.75rem;
+}
+
+.xg-panel-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.25rem;
+}
+
+.xg-panel-sub {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+/* ── Summary Row ─────────────────────────────────────────────────────────────── */
+
+.xg-summary-row {
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+  margin-bottom: 2rem;
+}
+
+.xg-summary-card {
+  flex: 1;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-top: 3px solid transparent;
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.xg-card-team {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.xg-card-main {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.xg-card-xg {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.xg-card-xglabel {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.xg-card-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.xg-card-label {
+  color: #94a3b8;
+}
+
+.xg-card-value {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+/* Performance badges */
+.xg-badge {
+  margin-top: 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  text-align: center;
+  width: fit-content;
+}
+
+.xg-badge-over {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.xg-badge-under {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
+.xg-badge-expected {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+/* VS column */
+.xg-summary-vs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0 0.75rem;
+  min-width: 110px;
+}
+
+.xg-vs-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  letter-spacing: 0.1em;
+}
+
+.xg-vs-score {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: 0.05em;
+}
+
+.xg-vs-xg {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+/* ── Section ──────────────────────────────────────────────────────────────────── */
+
+.xg-section {
+  margin-bottom: 2rem;
+}
+
+.xg-section-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #475569;
+  margin: 0 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.xg-empty {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+/* ── SVG Chart ────────────────────────────────────────────────────────────────── */
+
+.xg-chart-wrap {
+  position: relative;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.5rem;
+  overflow: hidden;
+}
+
+.xg-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  cursor: crosshair;
+}
+
+.xg-chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #64748b;
+  padding: 0.5rem 0.75rem;
+}
+
+.xg-legend-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.xg-legend-goal {
+  margin-left: 1.5rem;
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+
+/* Chart tooltip */
+.xg-chart-tooltip {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.82rem;
+  color: #1e293b;
+  pointer-events: none;
+  z-index: 1000;
+  min-width: 160px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.xg-tt-min {
+  font-weight: 700;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  margin-bottom: 0.4rem;
+}
+
+.xg-tt-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.2rem;
+}
+
+.xg-tt-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.xg-tt-val {
+  margin-left: auto;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* ── Shot Table ───────────────────────────────────────────────────────────────── */
+
+.xg-table-wrap {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.xg-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.83rem;
+  color: #334155;
+}
+
+.xg-table thead th {
+  background: #f1f5f9;
+  color: #94a3b8;
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.65rem 0.85rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+}
+
+.xg-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.1s;
+}
+
+.xg-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.xg-table tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.xg-table tbody tr:nth-child(even):hover {
+  background: #f1f5f9;
+}
+
+.xg-table td {
+  padding: 0.55rem 0.85rem;
+  vertical-align: middle;
+}
+
+/* Goal rows */
+.xg-row-goal {
+  border-left: 3px solid #22c55e !important;
+  background: #f0fdf4 !important;
+}
+
+.xg-row-goal:hover {
+  background: #dcfce7 !important;
+}
+
+/* Penalty rows */
+.xg-row-pen {
+  border-left: 3px solid #f59e0b !important;
+}
+
+/* Column-specific styles */
+.xg-td-min {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.xg-td-player {
+  font-weight: 500;
+  color: #1e293b;
+  white-space: nowrap;
+}
+
+.xg-td-team {
+  white-space: nowrap;
+}
+
+.xg-team-pill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.xg-td-xg {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.xg-pen-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #92400e;
+  background: #fef3c7;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
+.xg-td-outcome {
+  white-space: nowrap;
+}
+
+/* Outcome styles */
+.xg-outcome {
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.xg-outcome-goal    { color: #16a34a; }
+.xg-outcome-saved   { color: #2563eb; }
+.xg-outcome-missed  { color: #dc2626; }
+.xg-outcome-blocked { color: #64748b; }
+.xg-outcome-post    { color: #d97706; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────────── */
+
+@media (max-width: 700px) {
+  .xg-summary-row {
+    flex-direction: column;
+  }
+  .xg-summary-vs {
+    flex-direction: row;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 0.5rem 0;
+  }
+  .xg-panel {
+    padding: 1.25rem;
+  }
+}

@@ -129,6 +129,10 @@ export function fetchGoalBuildUps(matchId, period) {
   return request(`/match/${matchId}/goal-build-ups${buildQuery([periodParam(period)])}`);
 }
 
+export function fetchXGBreakdown(matchId) {
+  return request(`/match/${matchId}/xg-breakdown`);
+}
+
 /* ── AI Guide ────────────────────────────────────────────────────────────── */
 
 // Returns raw fetch Response for SSE streaming
