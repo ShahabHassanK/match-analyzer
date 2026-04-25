@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(awk -F, 'NR==1{for\\(i=1;i<=NF;i++\\) {if\\($i==\"type\"\\) tcol=i; if\\($i==\"is_big_chance\"\\) bc=i; if\\($i==\"is_big_chance_shot\"\\) bcs=i}} NR>1 && \\(bc||bcs\\) && \\($bc==\"TRUE\"||$bc==\"True\"||$bcs==\"TRUE\"||$bcs==\"True\"\\) {print $tcol}' '/e/Personal Projects/xG-app/backend/data/whoscored_Arsenal_vs_Liverpool_all_events.csv')",
-      "Bash(awk -F, 'NR==1{for\\(i=1;i<=NF;i++\\) if\\($i==\"xT\"\\) col=i} NR>1 && col && $col!=\"\" && $col!=\"0\" && $col!=\"0.0\" {count++} END{print \"non-zero xT events:\", count+0}' '/e/Personal Projects/xG-app/backend/data/whoscored_Arsenal_vs_Liverpool_all_events.csv')",
-      "Bash(awk -F, 'NR==1{for\\(i=1;i<=NF;i++\\) if\\($i==\"xT\"\\) col=i} NR>1 && col && $col != \"\" {sum += $col; count++} END{print \"total xT events:\", count+0, \"avg:\", \\(count ? sum/count : 0\\)}' '/e/Personal Projects/xG-app/backend/data/whoscored_Arsenal_vs_Liverpool_all_events.csv')"
-    ]
-  }
-}
